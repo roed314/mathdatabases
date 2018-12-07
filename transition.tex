@@ -1,0 +1,107 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\usepackage{url}
+
+\title{Maintaining Mathematical Databases}
+\author{Edgar Costa and David Roe}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+Clarify that we're talking about hosting mathematical data, rather than written mathematical content (such as Wikipedia, Mathworld, MathSciNet, arXiv) or something like the Mathematical Genealogy Project
+
+\section{Survey of major mathematical databases}
+
+\begin{itemize}
+\item LMFDB (\url{lmfdb.org})
+\item OEIS (\url{oeis.org})
+\item Encyclopedia of Triangle Centers (\url{http://faculty.evansville.edu/ck6/encyclopedia/ETC.html})
+\item Inverse Symbolic Calculator (\url{http://wayback.cecm.sfu.ca/projects/ISC/ISCmain.html})
+\item Information System on Graph Classes and their Inclusions (\url{graphclasses.org/})
+\item Complexity Zoo (\url{https://complexityzoo.uwaterloo.ca/Complexity_Zoo}) - discussion of source of data: computers or humans
+\item Digital Library of Mathematical Functions (\url{https://dlmf.nist.gov/})
+\item Consequences of the Axiom of Choice (\url{http://www.math.purdue.edu/~hrubin/JeanRubin/Papers/conseq.html})
+\item Cantor's Attice (\url{cantorsattic.info})
+\item Unipotent Muffin Research Kitchen (\url{http://lie.math.okstate.edu/UMRK/UMRK.html})
+\item Atlas of Lie Groups and Representations (\url{http://www.liegroups.org/})
+\item Atlas of Finite Group Representations (\url{http://brauer.maths.qmul.ac.uk/Atlas/v3/})
+\item FindStat (\url{http://www.findstat.org/})
+\item Matroids (\url{https://www.math.ucdavis.edu/~mkoeppe/art/Matroids/})
+\item GraphArichive (\url{http://www.graph-archive.org/doku.php}) - example that died
+\item Table of Knot Invariants (\url{http://www.indiana.edu/~knotinfo/})
+\item Databases included in GAP/Sage/etc
+\item Knot Atlas (\url{http://katlas.org/})
+\item Predecessors to the LMFDB (Cremona's tables, \url{https://math.la.asu.edu/~jj/localfields/} and other Jones' databases, \url{https://wstein.org/Tables/})
+\end{itemize}
+
+See question of Tim Gowers (https://mathoverflow.net/questions/68442/what-could-be-some-potentially-useful-mathematical-databases) about what databases might be desirable to have.
+
+\section{Hosting}
+
+\begin{itemize}
+\item On a personal webpage (easy for many academics), but limits scope (aren't running your own webserver)
+\item Using a web framework (e.g. Github, Cocalc, Wordpress/wikidot/blogs)
+\item On a university/personal server.  Complete control, but have to deal with down time, buying new servers, backups, security updates, DNS....
+\item Servers in the cloud (e.g. Google, AWS).  Reduces hassle, but costs money.
+\end{itemize}
+
+\section{Front End}
+
+\begin{itemize}
+\item E-mail me if you want the data
+\item HTML front page with downloads (static)
+\item Wiki page (dynamic but human generated)
+\item within computer algebra system (GAP/Sage/Magma)
+\item web application (LMFDB uses Python/Flask/Jinja with javascript/CSS/etc).  Allows for dynamic generation of pages, links, nicer representation of data
+\end{itemize}
+
+\section{Back End}
+
+\begin{itemize}
+\item static files (plain text, sql-lite, Sage pickles,....)
+\item Wiki software
+\item document oriented database (e.g. Mongo: schema free)
+\item relational database (e.g. Postgres)
+\end{itemize}
+
+\section{Mongo vs Postgres}
+
+\begin{itemize}
+\item Integers limited to 64 bits, so got in the habit of storing many things as strings (which made sorting tricky among other issues)
+\item Indexes on lists didn't work as we wanted (e.g. list of ramified primes) - would work for "what are all the fields ramified at 5" but not "what are all the fields ramified at 2 and 3".  Also inefficient (constructs query inefficiently since there are many more fields than primes)
+\item Mongo required more storage space since every document had to include the column names (quantify storage space change; quantify how much we're paying)
+\item Mongo required more RAM (Wired-Tiger; MMMAVP). Postgres can be faster with more RAM but works okay with less.
+\item Harder to do relational queries in Mongo; since we ported the table layout relational queries are still not used much in Postgres
+\item Have to specify a schema in postgres in advance.  This can be a hassle, but also can prevent errors (e.g. typos in column names, more complicated processing code because data isn't uniform)
+\item Postgres overcame much of Mongo's advantage with the inclusion of the json and jsonb types.
+\item Useful new utilities (pgAdmin 4)
+\item Performance improvements, important since we don't know what kind of queries the user will request so it's hard to build all indexes.  Partly because of lower storage, performance also improved even without indexes.  Non-typical queries can be the most interesting mathematically.
+\item (TODO) Actually compare performance while we still have the mongo instance around.
+\end{itemize}
+
+\section{Transition}
+
+\begin{itemize}
+\item Exporting data to plain text, readable using Postgres' COPY FROM.
+\item Choice of schema.  LMFDB's Inventory was very useful here.  Had to choose between jsonb and arrays; initially chose to just use jsonb for simplicity but more recently have used arrays for smaller storage footprint.  Tried to normalize data to some extent (away from using strings for so much). 
+\item Data irregularities slowed the process down
+\item Added abstraction layers.  psycopg2 is very low level (provides a way to execute SQL commands from Python and get the results back).  Because the lmfdb has almost no queries that cross multiple databases, was able to port Mongo dictionary queries: implemented a parser that generates simple SQL.  Means that most LMFDB developers don't need to learn SQL.
+\item Build data management tools into the interface (changing schema, importing new data from Python and from files
+\item Some optimizations (id ordering, split some tables in half)
+\end{itemize}
+
+\section{Abstraction}
+
+\begin{itemize}
+\item Copy-pasting
+\end{itemize}
+
+\section{New Features}
+
+\begin{itemize}
+\item
+\end{itemize}
+
+\end{document}
