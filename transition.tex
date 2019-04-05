@@ -68,34 +68,39 @@ See question of Tim Gowers (https://mathoverflow.net/questions/68442/what-could-
 \begin{itemize}
 \item static files (plain text, sql-lite, Sage pickles,....)
 \item Wiki software
-\item document oriented database (e.g. Mongo: schema free)
-\item relational database (e.g. Postgres)
+\item document oriented database (e.g. MongoDB: schema free)
+\item relational database (e.g. PostgreSQL)
 \end{itemize}
 
-\section{Mongo vs Postgres}
+\section{MongoDB vs PostgreSQL}
 
-\todo{Refer to Mongo or MongoDB, Postgres or PostgreSQL?}
-
-When the LMFDB project began, MongoDB was an exciting new option.  As a document-oriented database, it did not require a schema, a boon when creating new collections of mathematical objects where the data requirements only gradually became clear.  Moreover, Python bindings were available, a language that many computational number theorists were familiar with due to its use in SageMath.  It worked well for many years, but as the LMFDB grew various shortcomings of Mongo became more problematic.  Over the last year, we have transitioned from Mongo to Postgres.
+When the LMFDB project began, MongoDBDB was an exciting new option.  As a document-oriented database, it did not require a schema, a boon when creating new collections of mathematical objects where the data requirements only gradually became clear.  Moreover, Python bindings were available, a language that many computational number theorists were familiar with due to its use in SageMath.  It worked well for many years, but as the LMFDB grew various shortcomings of MongoDBbecame more problematic.  Over the last year, we have transitioned from MongoDB to PostgreSQL.
 
 \subsection{Comparing two database systems}
 
-Postgres is a popular open source implementation of the SQL language, and grew out of earlier projects founded in the 1970s and 80s.  As an SQL database, it stores data in tables with a specified schema: each row must have the same layout, with the types of columns constant across all rows.  In contrast, the fields present in a Mongo document can vary across a collection, as can their types.  This flexibility is convenient, but can also lead to errors.  Multiple typos in column names were found during the transition to Postgres, and differing layouts across documents requires more complicated processing code.  Moreover, the LMFDB was effectively using a schema even before the transition, to the extent that an inventory application was written to extract the schema from the data in Mongo.  Supporting the schema at the level of the database software improves robustness and performance.
-
-As a consequence of the shift to a schema, storing the data in Postgres requires substantially less space than in Mongo.  \todo{Quantify: how much storage space is used in each system?}
-
+PostgreSQL is a popular open source implementation of the SQL language and grew out of earlier projects founded in the 1970s and 80s.
+As an SQL database, it stores data in tables with a specified schema: each row must have the same layout, with the types of columns constant across all rows.
+In contrast, the fields present in a MongoDB document can vary across a collection, as can their types.
+This flexibility is convenient, but can easily lead to errors.
+Multiple typos in column names were found during the transition to PostgreSQL, and differing layouts across documents requires more complicated processing code.
+Moreover, the LMFDB was effectively using a schema even before the transition, to the extent that an inventory application was written to extract the schema from the data in MongoDB.
+Supporting the schema at the level of the database software improves robustness and performance.
+As a consequence of the shift to a schema, storing the data in PostgreSQL requires substantially less space than in MongoDB, as we do not need to store the keys for each row.
+For example, in table with 78 columns the saving 
+\todo{finish setence}
 \begin{itemize}
 \item Have to specify a schema in postgres in advance.  This can be a hassle, but also can prevent errors (e.g. typos in column names, more complicated processing code because data isn't uniform)
-\item Mongo required more storage space since every document had to include the column names (quantify storage space change; quantify how much we're paying)
-\item Harder to do relational queries in Mongo; since we ported the table layout relational queries are still not used much in Postgres
+\item MongoDB required more storage space since every document had to include the column names (quantify storage space change; quantify how much we're paying)
+\item Harder to do relational queries in MongoDB; since we ported the table layout relational queries are still not used much in PostgreSQL
 \item Integers limited to 64 bits, so got in the habit of storing many things as strings (which made sorting tricky among other issues)
-\item Indexes on lists didn't work as we wanted (e.g. list of ramified primes) - would work for "what are all the fields ramified at 5" but not "what are all the fields ramified at 2 and 3".  Also inefficient (constructs query inefficiently since there are many more fields than primes).  Postgres has multiple index types, including gin which work well for this purpose
-\item Mongo required more RAM (Wired-Tiger; MMAP). Postgres can be faster with more RAM but works okay with less.
-\item Postgres overcame much of Mongo's advantage with the inclusion of the json and jsonb types.
-\item Mongo was faster at counting results.  Work around this by caching counts in a table (possible since data doesn't change frequently)
+\item Indexes on lists didn't work as we wanted (e.g. list of ramified primes) - would work for "what are all the fields ramified at 5" but not "what are all the fields ramified at 2 and 3".  Also inefficient (constructs query inefficiently since there are many more fields than primes).  PostgreSQL has multiple index types, including gin which work well for this purpose
+\item MongoDB required more RAM (Wired-Tiger; MMAP). PostgreSQL can be faster with more RAM but works okay with less.
+\item PostgreSQL overcame much of MongoDB's advantage with the inclusion of the json and jsonb types.
+\item MongoDB was faster at counting results.  Work around this by caching counts in a table (possible since data doesn't change frequently)
 \item Useful new utilities (pgAdmin 4)
 \item Performance improvements, important since we don't know what kind of queries the user will request so it's hard to build all indexes.  Partly because of lower storage, performance also improved even without indexes.  Non-typical queries can be the most interesting mathematically.
 \item Fast loading from a file (COPY FROM), and direct data from Magma without a Python intermediary
+  add estimate
 \item (TODO) Actually compare performance while we still have the mongo instance around.
 \item Transactions (bugs don't cause data reliability problems) and data upload much faster
 \item EXPLAIN ANALYZE
@@ -105,10 +110,10 @@ As a consequence of the shift to a schema, storing the data in Postgres requires
 \subsection{Transition}
 
 \begin{itemize}
-\item Exporting data to plain text, readable using Postgres' COPY FROM.
+\item Exporting data to plain text, readable using PostgreSQL' COPY FROM.
 \item Choice of schema.  LMFDB's Inventory was very useful here.  Had to choose between jsonb and arrays; initially chose to just use jsonb for simplicity but more recently have used arrays for smaller storage footprint.  Tried to normalize data to some extent (away from using strings for so much). 
 \item Data irregularities slowed the process down
-\item Added abstraction layers.  psycopg2 is very low level (provides a way to execute SQL commands from Python and get the results back).  Because the lmfdb has almost no queries that cross multiple databases, was able to port Mongo dictionary queries: implemented a parser that generates simple SQL.  Means that most LMFDB developers don't need to learn SQL.
+\item Added abstraction layers.  psycopg2 is very low level (provides a way to execute SQL commands from Python and get the results back).  Because the lmfdb has almost no queries that cross multiple databases, was able to port MongoDB dictionary queries: implemented a parser that generates simple SQL.  Means that most LMFDB developers don't need to learn SQL.
 \item Build data management tools into the interface (changing schema, importing new data from Python and from files).  Replaces parts of scripts.
 \item Some optimizations (id ordering, split some tables in half)
 \end{itemize}
@@ -133,6 +138,7 @@ In addition to intrinsic benefits of using postgres, the transition has eased th
 \item Random result
 \item Log database changes for accountability (possible because of abstraction)
 \item Automatic encoding and decoding of more complicated data structures such as number fields
+\item Verifiability
 \end{itemize}
 
 \end{document}
