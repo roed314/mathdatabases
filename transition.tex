@@ -74,22 +74,29 @@ See question of Tim Gowers (https://mathoverflow.net/questions/68442/what-could-
 
 \section{MongoDB vs PostgreSQL}
 
-When the LMFDB project began, MongoDBDB was an exciting new option.  As a document-oriented database, it did not require a schema, a boon when creating new collections of mathematical objects where the data requirements only gradually became clear.  Moreover, Python bindings were available, a language that many computational number theorists were familiar with due to its use in SageMath.  It worked well for many years, but as the LMFDB grew various shortcomings of MongoDBbecame more problematic.  Over the last year, we have transitioned from MongoDB to PostgreSQL.
+When the LMFDB project began, MongoDB was an exciting new option.
+As a document-oriented database, it did not require a schema, a boon when creating new collections of mathematical objects where the data requirements only gradually became clear.
+Moreover, Python bindings were available, a language that many computational number theorists were familiar with due to its use in SageMath. \todo{style SageMath?}
+It worked well for many years, but as the LMFDB grew various shortcomings of MongoDB became more problematic.
+Over the last year, we have transitioned from MongoDB to PostgreSQL.
 
 \subsection{Comparing two database systems}
 
 PostgreSQL is a popular open source implementation of the SQL language and grew out of earlier projects founded in the 1970s and 80s.
 As an SQL database, it stores data in tables with a specified schema: each row must have the same layout, with the types of columns constant across all rows.
-In contrast, the fields present in a MongoDB document can vary across a collection, as can their types.
+In contrast, MongoDB is a documentstores each document independently in a JSON-like schemata,
+and thus the fields and types present in each document can vary across a collection.
 This flexibility is convenient, but can easily lead to errors.
 Multiple typos in column names were found during the transition to PostgreSQL, and differing layouts across documents requires more complicated processing code.
 Moreover, the LMFDB was effectively using a schema even before the transition, to the extent that an inventory application was written to extract the schema from the data in MongoDB.
 Supporting the schema at the level of the database software improves robustness and performance.
-As a consequence of the shift to a schema, storing the data in PostgreSQL requires substantially less space than in MongoDB, as we do not need to store the keys for each row.
-For example, in table with 78 columns the saving 
-\todo{finish setence}
+As a consequence of the shift to a schema, storing the data in PostgreSQL requires substantially less space than in MongoDB.
+For example, when converting our biggest MongoDB collection \texttt{Lfunctions.Lfunctions} to the PostgreSQL table \texttt{lfunc\_lfunctions}, we observed a space savings of about 42\%, going from 194GiB to 113GiB.
+This was perhaps due to the large number of columns, 78, and the fact that  per document, and that many  
+This kind of savings are critical for performance, 
+, as we do not need to store the keys for each row.
+
 \begin{itemize}
-\item Have to specify a schema in postgres in advance.  This can be a hassle, but also can prevent errors (e.g. typos in column names, more complicated processing code because data isn't uniform)
 \item MongoDB required more storage space since every document had to include the column names (quantify storage space change; quantify how much we're paying)
 \item Harder to do relational queries in MongoDB; since we ported the table layout relational queries are still not used much in PostgreSQL
 \item Integers limited to 64 bits, so got in the habit of storing many things as strings (which made sorting tricky among other issues)
@@ -100,11 +107,15 @@ For example, in table with 78 columns the saving
 \item Useful new utilities (pgAdmin 4)
 \item Performance improvements, important since we don't know what kind of queries the user will request so it's hard to build all indexes.  Partly because of lower storage, performance also improved even without indexes.  Non-typical queries can be the most interesting mathematically.
 \item Fast loading from a file (COPY FROM), and direct data from Magma without a Python intermediary
-  add estimate
+  % Loaded data into mf_hecke_cc in 29032.052 secs from /scratch/mf/cc/mf_hecke_cc.txt
 \item (TODO) Actually compare performance while we still have the mongo instance around.
 \item Transactions (bugs don't cause data reliability problems) and data upload much faster
 \item EXPLAIN ANALYZE
 \item Array types (not just a jsonb)
+\end{itemize}
+
+\begin{itemize}
+ \item Have to specify a schema in postgres in advance.  This can be a hassle, but also can prevent errors (e.g. typos in column names, more complicated processing code because data isn't uniform)
 \end{itemize}
 
 \subsection{Transition}
