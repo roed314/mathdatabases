@@ -79,24 +79,30 @@ When the LMFDB project began, MongoDB was an exciting new option.  As a document
 
 Postgres is a popular open source implementation of the SQL language, and grew out of earlier projects founded in the 1970s and 80s.  As an SQL database, it stores data in tables with a specified schema: each row must have the same layout, with the types of columns constant across all rows.  In contrast, the fields present in a Mongo document can vary across a collection, as can their types.  This flexibility is convenient, but can also lead to errors.  Multiple typos in column names were found during the transition to Postgres, and differing layouts across documents requires more complicated processing code.  Moreover, the LMFDB was effectively using a schema even before the transition, to the extent that an inventory application was written to extract the schema from the data in Mongo.  Supporting the schema at the level of the database software improves robustness and performance.
 
-As a consequence of the shift to a schema, storing the data in Postgres requires substantially less space than in Mongo.  \todo{Quantify: how much storage space is used in each system?}
+As a consequence of the shift to a schema, storing the data in Postgres requires substantially less space than in Mongo.  \todo{Quantify: how much storage space is used in each system?} Two main factors account for this improvement.  Because the fields in a Mongo document can vary, the names of these fields must be stored in each document.  For some of the LMFDB's collections, these names accounted for a substantial fraction of the storage requirement.  In addition to the space benefits, the switch to postgres also relaxes the pressure to minimize the lengths of these names, improving readability.
+
+The second factor contributing to space savings is the reduced use of strings in the data itself.  As a mathematical database, the LMFDB was heavily impacted by Mongo's lack of support for arbitrary precision integers.  In order to work around this issue, a lot of numerical data was stored as strings.  In addition to the storage consequences, various workarounds were required in order to sort data correctly.  The elimination of these hacks have simplified a lot of supporting code.  \todo{Check to see if Mongo is less efficient than postgres when storing lists of integers; are they using a string-based json format or a compact array format?}
+
+The two systems also have different requirements in terms of working memory.  \todo{Describe the Mongo memory requirements}  In contrast, Postgres will work in low memory environments.  \todo{Describe the minimum memory required to run the LMFDB, as well as how additional memory impacts performance}
+
+One of the main tools for improving search performance on databases is the use of indexes.  Indexes facilitate the location of records with constraints on a specified set of columns by storing additional data.  For example, both Mongo and postgres support indexes based on binary trees, which work well for totally ordered data such as integers and strings.  However, there is another query type that is not well supported by binary trees.  If $K$ is a number field, the LMFDB stores a list $P_K$ of ramified primes.  We would like to be able to specify a list $Q$ of primes and be able to find all $K$ with $Q \subseteq P_K$, or all $K$ with $Q \supseteq P_K$.  Mongo executed these searches by narrowing the results one prime at a time \todo{confirm that this is actually what Mongo is doing} In contrast, GIN indexes in postgres support such queries efficiently.
+
 
 \begin{itemize}
-\item Have to specify a schema in postgres in advance.  This can be a hassle, but also can prevent errors (e.g. typos in column names, more complicated processing code because data isn't uniform)
-\item Mongo required more storage space since every document had to include the column names (quantify storage space change; quantify how much we're paying)
-\item Harder to do relational queries in Mongo; since we ported the table layout relational queries are still not used much in Postgres
-\item Integers limited to 64 bits, so got in the habit of storing many things as strings (which made sorting tricky among other issues)
+%\item Have to specify a schema in postgres in advance.  This can be a hassle, but also can prevent errors (e.g. typos in column names, more complicated processing code because data isn't uniform)
+%\item Mongo required more storage space since every document had to include the column names (quantify storage space change; quantify how much we're paying)
+%\item Integers limited to 64 bits, so got in the habit of storing many things as strings (which made sorting tricky among other issues)
+%\item Array types (not just a jsonb)
+%\item Mongo required more RAM (Wired-Tiger; MMAP). Postgres can be faster with more RAM but works okay with less.
 \item Indexes on lists didn't work as we wanted (e.g. list of ramified primes) - would work for "what are all the fields ramified at 5" but not "what are all the fields ramified at 2 and 3".  Also inefficient (constructs query inefficiently since there are many more fields than primes).  Postgres has multiple index types, including gin which work well for this purpose
-\item Mongo required more RAM (Wired-Tiger; MMAP). Postgres can be faster with more RAM but works okay with less.
+\item Performance improvements, important since we don't know what kind of queries the user will request so it's hard to build all indexes.  Partly because of lower storage, performance also improved even without indexes.  Non-typical queries can be the most interesting mathematically.
+\item Harder to do relational queries in Mongo; since we ported the table layout relational queries are still not used much in Postgres
 \item Postgres overcame much of Mongo's advantage with the inclusion of the json and jsonb types.
 \item Mongo was faster at counting results.  Work around this by caching counts in a table (possible since data doesn't change frequently)
 \item Useful new utilities (pgAdmin 4)
-\item Performance improvements, important since we don't know what kind of queries the user will request so it's hard to build all indexes.  Partly because of lower storage, performance also improved even without indexes.  Non-typical queries can be the most interesting mathematically.
 \item Fast loading from a file (COPY FROM), and direct data from Magma without a Python intermediary
 \item (TODO) Actually compare performance while we still have the mongo instance around.
 \item Transactions (bugs don't cause data reliability problems) and data upload much faster
-\item EXPLAIN ANALYZE
-\item Array types (not just a jsonb)
 \end{itemize}
 
 \subsection{Transition}
