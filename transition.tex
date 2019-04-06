@@ -15,6 +15,7 @@
 
 Clarify that we're talking about hosting mathematical data, rather than written mathematical content (such as Wikipedia, Mathworld, MathSciNet, arXiv) or something like the Mathematical Genealogy Project
 
+\section{The LMFDB project}
 \section{Survey of major mathematical databases}
 
 \begin{itemize}
@@ -72,11 +73,67 @@ See question of Tim Gowers (https://mathoverflow.net/questions/68442/what-could-
 \item relational database (e.g. PostgreSQL)
 \end{itemize}
 
+
 \section{MongoDB vs PostgreSQL}
 
-When the LMFDB project began, MongoDBDB was an exciting new option.  As a document-oriented database, it did not require a schema, a boon when creating new collections of mathematical objects where the data requirements only gradually became clear.  Moreover, Python bindings were available, a language that many computational number theorists were familiar with due to its use in SageMath.  It worked well for many years, but as the LMFDB grew various shortcomings of MongoDBbecame more problematic.  Over the last year, we have transitioned from MongoDB to PostgreSQL.
+In 2009, when MongoDB was initially released as an open source project in it presented itself as an exciting new option to consistently store mathematical objects.
+As a document-oriented database, where each document is stored independently in a JSON-like schemata, it did not require a schema, a boon when creating new collections of mathematical objects where the data requirements only gradually became clear.
+Moreover, Python bindings were available, a language that many computational number theorists were familiar with due to its use in SageMath.
+It worked well for many years, but as the LMFDB grew various shortcomings of using a non relational database became more problematic.
+Over the last year, we have transitioned from MongoDB to PostgreSQL, a popular open source implementation of the SQL language that grew out of earlier projects founded in the 1970s and 80s.
+As an relational database, PostgreSQL stores data in structure way in tables with a specified schema: each row must have the same layout, with the types of columns constant across all rows.
 
 \subsection{Comparing two database systems}
+
+The crucial difference between MongoDB and PostgreSQL it is their paradigm.
+MongoDB as a document-oriented database is meant to facilitate the storage of unstructured data, where the fields and types present in each document can vary across a collection.
+This flexibility is extremely convenient, but can also easily lead to errors and unnecessary overhead for a structured database.
+For example, field names were kept short in MongoDB to save on space usage and multiple typos in the field names were found during the transition to PostgreSQL.
+Furthermore, differing layouts across documents requires a more complicated processing code.
+This overhead was unnecessary as the LMFDB was already using a schema before the transition, to the extent that an inventory application was written to extract the schema from the data in MongoDB.
+However, supporting the schema at the level of the database software significantly improves robustness and performance.
+As a consequence of the paradigm shift, storing the data in PostgreSQL requires substantially less space than in MongoDB.
+For example, when converting our biggest MongoDB collection \texttt{Lfunctions.Lfunctions} to the PostgreSQL table \texttt{lfunc\_lfunctions}, we observed a space savings of about 42\%, going from 194GiB to 113GiB.
+\todo{mention that in MongoDB we pay about 2k per year on storage space}
+
+Two main factors account for this improvement.
+Because the fields in a MongoDB document can vary, the names of these fields must be stored in each document.
+For some of the LMFDB's collections, these names accounted for a substantial fraction of the storage requirement.
+In addition to the space benefits, the switch to PostgreSQL also relaxes the pressure to minimize the lengths of these names, improving readability.
+
+The second factor contributing to space savings is the reduced use of strings in the data itself.
+As a mathematical database, the LMFDB was heavily impacted by MongoDB's limited type support and its indexes \todo{add ref}
+For example, the lack of support for arbitrary precision integers.
+In order to work around this issue, a lot of numerical data was stored as strings.
+In addition to the storage consequences, various workarounds were required in order to sort and search the data correctly.
+The elimination of these hacks have simplified a lot of the supporting code.
+
+
+
+
+One of the main tools for improving search performance on databases is the use of indexes.
+Indexes facilitate the location of records with constraints on a specified set of columns by storing additional data.
+For example, both MongoDB and PostgreSQL support indexes based on binary trees, which work well for totally ordered data such as integers and strings.
+However, there is another query type that is not well supported by binary trees.
+If $K$ is a number field, the LMFDB stores a list $P_K$ of ramified primes.
+We would like to be able to specify a list $Q$ of primes and be able to find all $K$ with $Q \subseteq P_K$, or all $K$ with $Q \supseteq P_K$.
+MongoDB executed these searches by narrowing the results one prime at a time \todo{confirm that this is actually what MongoDB is doing}
+In contrast, GIN indexes in PostgreSQL support such queries efficiently.
+\todo{we need to provide high performance indexless queries}
+
+
+
+
+For last, MongoDB offered us two different storage engines Memory Mapping (MMAP) and WiredTiger.
+The major difference between these systems is that MMAP automatically tries to (dynamically) use all free memory on the machine, while WiredTiger tries to balance the memory usage with filesystem cache, this is very similar to what PostgreSQL also does.
+In a system with enough memory to fit a big chunk of the data set, MMAP significantly outperforms WiredTiger.
+However, in a more realist low memory environment system, we found that WiredTiger outperforms MMAP in most queries, while also providing data compression at the disk level.
+For these reasons, WiredTiger was the storage engine behind www.LMFDB.org.
+\todo{redo last sentence}
+And in this setting PostgreSQL outperforms both, and thus an overall improvement in the performance while keeping the servers of at the same cost.
+
+
+
 
 \begin{itemize}
 %\item Have to specify a schema in PostgreSQL in advance.  This can be a hassle, but also can prevent errors (e.g. typos in column names, more complicated processing code because data isn't uniform)
@@ -91,47 +148,12 @@ When the LMFDB project began, MongoDBDB was an exciting new option.  As a docume
 \item MongoDB was faster at counting results.  Work around this by caching counts in a table (possible since data doesn't change frequently)
 \item Useful new utilities (pgAdmin 4)
 \item Fast loading from a file (COPY FROM), and direct data from Magma without a Python intermediary
-  add estimate
+  % Loaded data into mf_hecke_cc in 29032.052 secs from /scratch/mf/cc/mf_hecke_cc.txt
 \item (TODO) Actually compare performance while we still have the mongo instance around.
 \item Transactions (bugs don't cause data reliability problems) and data upload much faster
 \end{itemize}
 
-PostgreSQL is a popular open source implementation of the SQL language and grew out of earlier projects founded in the 1970s and 80s.
-As an SQL database, it stores data in tables with a specified schema: each row must have the same layout, with the types of columns constant across all rows.
-In contrast, the fields present in a MongoDB document can vary across a collection, as can their types.
-This flexibility is convenient, but can easily lead to errors.
-Multiple typos in column names were found during the transition to PostgreSQL, and differing layouts across documents requires more complicated processing code.
-Moreover, the LMFDB was effectively using a schema even before the transition, to the extent that an inventory application was written to extract the schema from the data in MongoDB.
-Supporting the schema at the level of the database software improves robustness and performance.
 
-As a consequence of the shift to a schema, storing the data in PostgreSQL requires substantially less space than in MongoDB, as we do not need to store the keys for each row.
-\todo{Quantify: how much storage space is used in each system?}
-For example, in table with 78 columns the saving  \todo{finish sentence}
-Two main factors account for this improvement.
-Because the fields in a MongoDB document can vary, the names of these fields must be stored in each document.
-For some of the LMFDB's collections, these names accounted for a substantial fraction of the storage requirement.
-In addition to the space benefits, the switch to PostgreSQL also relaxes the pressure to minimize the lengths of these names, improving readability.
-
-The second factor contributing to space savings is the reduced use of strings in the data itself.
-As a mathematical database, the LMFDB was heavily impacted by MongoDB's lack of support for arbitrary precision integers.
-In order to work around this issue, a lot of numerical data was stored as strings.
-In addition to the storage consequences, various workarounds were required in order to sort data correctly.
-The elimination of these hacks have simplified a lot of supporting code.
-\todo{Check to see if MongoDB is less efficient than PostgreSQL when storing lists of integers; are they using a string-based json format or a compact array format?}
-
-The two systems also have different requirements in terms of working memory.
-\todo{Describe the MongoDB memory requirements}
-In contrast, Postgres will work in low memory environments.
-\todo{Describe the minimum memory required to run the LMFDB, as well as how additional memory impacts performance}
-
-One of the main tools for improving search performance on databases is the use of indexes.
-Indexes facilitate the location of records with constraints on a specified set of columns by storing additional data.
-For example, both MongoDB and PostgreSQL support indexes based on binary trees, which work well for totally ordered data such as integers and strings.
-However, there is another query type that is not well supported by binary trees.
-If $K$ is a number field, the LMFDB stores a list $P_K$ of ramified primes.
-We would like to be able to specify a list $Q$ of primes and be able to find all $K$ with $Q \subseteq P_K$, or all $K$ with $Q \supseteq P_K$.
-MongoDB executed these searches by narrowing the results one prime at a time \todo{confirm that this is actually what MongoDB is doing}
-In contrast, GIN indexes in PostgreSQL support such queries efficiently.
 
 \subsection{Transition}
 
