@@ -148,23 +148,63 @@ In contrast, GIN indexes in PostgreSQL support such queries efficiently.
 
 \subsection{Abstraction}
 
-\begin{itemize}
-\item Copy-pasta
-\item Statistics
-\item Search-parsing
-\item Search-wrapper (easier to display helpful error messages if the search times out or has a problem processing arguments)
-\end{itemize}
+As the LMFDB has grown, the most common paradigm for adding new features has been to take a functional section of the website, copy it to a new folder, and modify the templates and backend code.
+This approach has the benefit of easily producing valid code, since one is iteratively making small changes to an already functional webpage.
+However, it leads to large quantities of repeated code, which make fixing bugs and adding features much harder, since the same change must be applied in dozens of locations.
+The standard solution is to encapsulate tasks into functions, that can then be used repeatedly and changed at need.
+Of course, the LMFDB has used functions since the beginning, but often these functions are not written in a way that allows them to be used in multiple sections of the website.
+
+The task of switching from MongoDB to PostgreSQL was made more difficult by this low level of abstraction, but it also presented an opportunity.
+Since the database change necessitated changing a large number of files throughout the project, it offered a perfect time to make additional changes.
+We highlight three in particular to illustrate the kinds of encapsulation that accompanied the database change.
+
+Each section of the LMFDB has a search page, where users can input constraints they would like their curve, field or group to satisfy.
+Some input boxes require an integer or list of integers; others need a label string in a particular format; others a rational number.
+The processing code must process the user provided text, raising appropriate errors on invalid input, and transform the set of inputs into a database query.
+Prior to the database change, we had already begun the process of encapsulating this task.
+Each input box corresponds to a specific field or column in the database, and there is a processing function for each type of input (list of integers, floating point, etc).
+As we switched each part of the LMFDB to PostgreSQL, we ensured that it was using these functions.
+
+Once these queries have been constructed, we need to execute the search and pass the results to the Jinja template that actually crafts the webpage seen by the user.
+There are various parts of this task that are shared among all sections of the LMFDB.
+For example, we have to be able to handle errors in user input, errors or timeouts in the execution of the query, and jump boxes that allow a user to go straight to an object with a particular label.
+As part of the switch to PostgreSQL, we created a \emph{search wrapper} that performs all of these jobs in a uniform way, and adopted it across the LMFDB.
+In addition to simplifying the code overall, this change made the user experience more uniform and allowed for the creation of new features, which will be described in the next section.
+
+Many sections of the LMFDB had a statistics page prior to the database change.
+These pages described the number of objects with certain attributes; for example, a table of how many number fields were available by signature, or a table giving the fraction of elliptic curves with a specified torsion structure.
+Along with the database change, we created a class to support the database queries required for these statistics, and a common template to display them nicely.
+This change has the benefit that it automates the process for updating these counts when developers add data.
+It also make it easier to create these statistics pages for more sections of the LMFDB, and makes it easier to implement new features such as user-requested statistics.
 
 \subsection{New Features}
 
-In addition to intrinsic benefits of using PostgreSQL, the transition has eased the implementation of a number of new features
-\begin{itemize}
-\item Transactions for database actions
-\item Dynamic statistics
-\item Random result
-\item Log database changes for accountability (possible because of abstraction)
-\item Automatic encoding and decoding of more complicated data structures such as number fields
-\item Verifiability
-\end{itemize}
+In addition to intrinsic benefits of using PostgreSQL, the transition has eased the implementation of a number of new features.
+While many of these would have been possible using MongoDB, the improved abstraction made implementing them much more manageable.
+And some, such as dynamic statistics and verifications, rely on PostgreSQL's improved performance and relational model.
+
+PostgreSQL supports transactions, allowing one to roll back to a functional earlier state if some later action fails.
+We have built these transactions into our interface layer, and this change has enabled new paradigms when making data changes.
+Rather than having to create a whole new copy of a table when making substantial changes, transactions allow sufficient peace-of-mind that more operations can be performed in-place.
+
+The fact that all interactions with the database pass through our own interface layer allows us to add custom logging.
+For example, all queries that take longer than a threshold are recorded, allowing us to focus on creating the right indexes.
+We also log high-level actions, such as adding new data to a table or changing a schema, along with a username in order to provide a record of what changes have been made to the data.
+These logs help us ensure the quality of our data.
+
+The statistics infrastructure has enabled a new user interface which we refer to as \emph{dynamic statistics}.
+Rather than presenting only a pre-selected set of views, the user can specify which variables they are interested in, as well as constraints on the objects.
+The system the generates a display describing the possible values of those variables and the number of objects possessing each possible set of values.
+For example, a user can create a table to view how the weight and level of modular forms vary among forms with complex multiplication.
+We hope that this feature will provide researchers with a new method of interacting with the LMFDB, allowing them to look for large scale patterns in these objects in addition to searching for objects with particular properties.
+
+Many browse pages in the LMFDB already had a link to view a random object.
+Because of the new search wrapper abstraction, it was easy to add the ability to return a random object satisfying a search query.
+This feature saves time when browsing, since it allows you to more quickly reach the homepage of an object satisfying a particular constraint, such as CM elliptic curve or a weight 1 modular form.
+
+Mathematical data differs from data in most other applications because it has a notion of correctness that can be checked, rather than just providing a record of a real-world measurement.
+Some of these verifications are internal, such as checking that the defining polynomial of a number field is irreducible or that the trace of a modular form is zero at each inert prime not dividing the level.
+Others rely on connections with other tables in the database, such as checking that invariants match up between an elliptic curve and its corresponding modular form.
+The switch to PostgreSQL made it possible to create a framework to write such consistency checks and run them whenever new data is added.
 
 \end{document}
