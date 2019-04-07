@@ -2,11 +2,27 @@
 \usepackage{amsmath,amssymb}
 \usepackage{url}
 \usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,urlcolor=blue,citecolor=blue,linkcolor=blue}
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{colonequals}
+
+
+
+%bibtex fix
+% \usepackage[style=numeric]{biblatex}
+\usepackage{eqparbox}
+\usepackage[numbers]{natbib}
+\renewcommand*{\bibnumfmt}[1]{\eqparbox[t]{bblnm}{[#1]}}
+
 
 \newcommand{\todo}[1]{\textcolor{red}{#1}}
 
 \title{Maintaining Mathematical Databases}
 \author{Edgar Costa and David Roe}
+
+
 
 \begin{document}
 \maketitle
@@ -16,13 +32,47 @@
 Clarify that we're talking about hosting mathematical data, rather than written mathematical content (such as Wikipedia, Mathworld, MathSciNet, arXiv) or something like the Mathematical Genealogy Project
 
 \section{The LMFDB project}
-\section{Survey of major mathematical databases}
+The Langlands program, first formulated by Robert Langlands in the 1960s, is a set of widespread conjectures aimed at understanding and explaining the interconnections between a dizzying array of subfields of mathematics, including number theory, representation theory, algebraic geometry, and harmonic analysis---and in the 21st century its reach continues to expand.
+The Langlands program has been called ``one of the biggest ideas to come out of mathematics in the last fifty years'' and ``the Grand Unified Theory of mathematics'' \cite[p. 3]{frenkel}.
+
+
+To provide compelling visual and computational displays of the Langlands program ``in action'', a database was created called the \emph{$L$-functions and Modular Forms Database (LMFDB)}, available at the website \url{http://www.lmfdb.org/}.
+The LMFDB was first conceived in 2007~\cite{cremona-16} and remains the object of a significant amount of ongoing work by over one hundred mathematicians \cite[\S Acknowledgments]{lmfdb}.
+
+
+The LMFDB hosts a variety of databases and connects them through the Langlands program.
+
+
+\section{Other mathematical databases}
+
+\todo{What about if we instead of listing all these databases we just use them as examples? for certain things? Or did we have some other goal in mind?}
+
+\subsection{The On-Line Encyclopedia of Integer Sequences}
+The The On-Line Encyclopedia of Integer Sequences (OEIS) \url{oeis.org} is an online database of integer sequences, containing over 300,000 sequences and steadily growing.
+It records information on integer sequences of interest from a professional mathematicians to general public.
+.
+Each entry contains the leading terms of the sequence, keywords, mathematical motivations, literature links, and more.
+The database is searchable by keyword or by subsequence.
+For example, one can search for \href{https://oeis.org/search?q=1,2,0,2,0,5,6,9,0,3,1,5,9,5}{\texttt{1,2,0,2,0,5,6,9,0,3,1,5,9,5}}
+to find the sequence \texttt{A002117}, the Decimal expansion of $\zeta(3)$, where $\zeta$ is the Riemann-zeta function.
+
+\subsection{Inverse Symbolic Calculator}
+The Inverse Symbolic Calculator (ISC) \url{http://wayback.cecm.sfu.ca/projects/ISC/} is an online database and a set of programs dedicated to the identification of truncated decimal expansion as a closed form representation.
+
+Similarly to OEIS one can also search on \href{http://wayback.cecm.sfu.ca/cgi-bin/isc/lookup?number=1.2020569031595942&lookup_type=simple}{\texttt{1.2020569031595942}}, to find that such decimal expansion seems to be $\zeta(3)$ or
+searching on
+\href{http://wayback.cecm.sfu.ca/cgi-bin/isc/lookup?number=22.8415439646377&lookup_type=simple}{\texttt{22.841543964637705}} and finding that it is an approximation to $\zeta(3)^{17}$.
+
+
+\subsection{Encyclopedia of Triangle Centers}
+
+The Encyclopedia of Triangle Centers (ETC) \url{http://faculty.evansville.edu/ck6/encyclopedia/ETC.html} is an online database of triangle centers, this is a point in the plane that is in some sense a center of a triangle akin to the centers other plane figures.
+The ETC extends the list of 400 triangle centers originally published in \cite{kimberling-98} and now covers 32000 triangle centers.
+
+\todo{I'm not sure what else to say about this one, and this one is quite "simple"}
+
 
 \begin{itemize}
-\item LMFDB (\url{lmfdb.org})
-\item OEIS (\url{oeis.org})
-\item Encyclopedia of Triangle Centers (\url{http://faculty.evansville.edu/ck6/encyclopedia/ETC.html})
-\item Inverse Symbolic Calculator (\url{http://wayback.cecm.sfu.ca/projects/ISC/ISCmain.html})
 \item Information System on Graph Classes and their Inclusions (\url{graphclasses.org/})
 \item Complexity Zoo (\url{https://complexityzoo.uwaterloo.ca/Complexity_Zoo}) - discussion of source of data: computers or humans
 \item Digital Library of Mathematical Functions (\url{https://dlmf.nist.gov/})
@@ -92,6 +142,7 @@ For example, field names were kept short in MongoDB to save on space usage and m
 Furthermore, differing layouts across documents requires a more complicated processing code.
 This overhead was unnecessary as the LMFDB was already using a schema before the transition, to the extent that an inventory application was written to extract the schema from the data in MongoDB.
 However, supporting the schema at the level of the database software significantly improves robustness and performance.
+Furthermore, PostgreSQL overcame much of MongoDB's advantage of schemeless collections with the inclusion of the JSON and JSONB types.
 As a consequence of the paradigm shift, storing the data in PostgreSQL requires substantially less space than in MongoDB.
 For example, when converting our biggest MongoDB collection \texttt{Lfunctions.Lfunctions} to the PostgreSQL table \texttt{lfunc\_lfunctions}, we observed a space savings of about 42\%, going from 194GiB to 113GiB.
 \todo{mention that in MongoDB we pay about 2k per year on storage space}
@@ -113,13 +164,16 @@ The elimination of these hacks have simplified a lot of the supporting code.
 
 One of the main tools for improving search performance on databases is the use of indexes.
 Indexes facilitate the location of records with constraints on a specified set of columns by storing additional data.
+Having such indexes available is key to provide quick searche results for typical queries.
 For example, both MongoDB and PostgreSQL support indexes based on binary trees, which work well for totally ordered data such as integers and strings.
 However, there is another query type that is not well supported by binary trees.
+\todo{wouldn't be better to just explain this with lists, and then give the example of Number fields?}
 If $K$ is a number field, the LMFDB stores a list $P_K$ of ramified primes.
 We would like to be able to specify a list $Q$ of primes and be able to find all $K$ with $Q \subseteq P_K$, or all $K$ with $Q \supseteq P_K$.
 MongoDB executed these searches by narrowing the results one prime at a time \todo{confirm that this is actually what MongoDB is doing}
 In contrast, GIN indexes in PostgreSQL support such queries efficiently.
-\todo{we need to provide high performance indexless queries}
+
+
 
 
 
@@ -128,12 +182,11 @@ For last, MongoDB offered us two different storage engines Memory Mapping (MMAP)
 The major difference between these systems is that MMAP automatically tries to (dynamically) use all free memory on the machine, while WiredTiger tries to balance the memory usage with filesystem cache, this is very similar to what PostgreSQL also does.
 In a system with enough memory to fit a big chunk of the data set, MMAP significantly outperforms WiredTiger.
 However, in a more realist low memory environment system, we found that WiredTiger outperforms MMAP in most queries, while also providing data compression at the disk level.
-For these reasons, WiredTiger was the storage engine behind www.LMFDB.org.
-\todo{redo last sentence}
-And in this setting PostgreSQL outperforms both, and thus an overall improvement in the performance while keeping the servers of at the same cost.
+For these reasons, WiredTiger was the storage engine behind \url{www.LMFDB.org}.
+In the transition to PostgreSQL we noticed a significant improvement in indexless queries, which is critical as we don't know a priori what kind of queries the user will request so it's hard to build all indexes. Furthemore, the non-typical queries can be the most interesting mathematically.
 
 
-
+Given the maturity of PostgreSQL there are numerous open source front-ends and tools for administering that lower the introduction barrier to the SQL language.
 
 \begin{itemize}
 %\item Have to specify a schema in PostgreSQL in advance.  This can be a hassle, but also can prevent errors (e.g. typos in column names, more complicated processing code because data isn't uniform)
@@ -141,12 +194,12 @@ And in this setting PostgreSQL outperforms both, and thus an overall improvement
 %\item Integers limited to 64 bits, so got in the habit of storing many things as strings (which made sorting tricky among other issues)
 %\item Array types (not just a jsonb)
 %\item MongoDB required more RAM (Wired-Tiger; MMAP). Postgres can be faster with more RAM but works okay with less.
-\item Indexes on lists didn't work as we wanted (e.g. list of ramified primes) - would work for "what are all the fields ramified at 5" but not "what are all the fields ramified at 2 and 3".  Also inefficient (constructs query inefficiently since there are many more fields than primes).  Postgres has multiple index types, including gin which work well for this purpose
-\item Performance improvements, important since we don't know what kind of queries the user will request so it's hard to build all indexes.  Partly because of lower storage, performance also improved even without indexes.  Non-typical queries can be the most interesting mathematically.
+%\item Indexes on lists didn't work as we wanted (e.g. list of ramified primes) - would work for "what are all the fields ramified at 5" but not "what are all the fields ramified at 2 and 3".  Also inefficient (constructs query inefficiently since there are many more fields than primes).  Postgres has multiple index types, including gin which work well for this purpose
+%\item Performance improvements, important since we don't know what kind of queries the user will request so it's hard to build all indexes.  Partly because of lower storage, performance also improved even without indexes.  Non-typical queries can be the most interesting mathematically.
 \item Harder to do relational queries in MongoDB; since we ported the table layout relational queries are still not used much in Postgres
-\item Postgres overcame much of MongoDB's advantage with the inclusion of the json and jsonb types.
+%\item Postgres overcame much of MongoDB's advantage with the inclusion of the json and jsonb types.
 \item MongoDB was faster at counting results.  Work around this by caching counts in a table (possible since data doesn't change frequently)
-\item Useful new utilities (pgAdmin 4)
+%\item Useful new utilities (pgAdmin 4)
 \item Fast loading from a file (COPY FROM), and direct data from Magma without a Python intermediary
   % Loaded data into mf_hecke_cc in 29032.052 secs from /scratch/mf/cc/mf_hecke_cc.txt
 \item (TODO) Actually compare performance while we still have the mongo instance around.
@@ -159,7 +212,7 @@ And in this setting PostgreSQL outperforms both, and thus an overall improvement
 
 \begin{itemize}
 \item Exporting data to plain text, readable using PostgreSQL' COPY FROM.
-\item Choice of schema.  LMFDB's Inventory was very useful here.  Had to choose between jsonb and arrays; initially chose to just use jsonb for simplicity but more recently have used arrays for smaller storage footprint.  Tried to normalize data to some extent (away from using strings for so much). 
+\item Choice of schema.  LMFDB's Inventory was very useful here.  Had to choose between jsonb and arrays; initially chose to just use jsonb for simplicity but more recently have used arrays for smaller storage footprint.  Tried to normalize data to some extent (away from using strings for so much).
 \item Data irregularities slowed the process down
 \item Added abstraction layers.  psycopg2 is very low level (provides a way to execute SQL commands from Python and get the results back).  Because the lmfdb has almost no queries that cross multiple databases, was able to port MongoDB dictionary queries: implemented a parser that generates simple SQL.  Means that most LMFDB developers don't need to learn SQL.
 \item Build data management tools into the interface (changing schema, importing new data from Python and from files).  Replaces parts of scripts.
@@ -228,5 +281,8 @@ Mathematical data differs from data in most other applications because it has a 
 Some of these verifications are internal, such as checking that the defining polynomial of a number field is irreducible or that the trace of a modular form is zero at each inert prime not dividing the level.
 Others rely on connections with other tables in the database, such as checking that invariants match up between an elliptic curve and its corresponding modular form.
 The switch to PostgreSQL made it possible to create a framework to write such consistency checks and run them whenever new data is added.
+
+\bibliographystyle{alpha}
+\bibliography{biblio}
 
 \end{document}
