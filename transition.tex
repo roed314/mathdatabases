@@ -17,7 +17,8 @@
 \renewcommand*{\bibnumfmt}[1]{\eqparbox[t]{bblnm}{[#1]}}
 
 
-\newcommand{\todo}[1]{\textcolor{red}{#1}}
+\usepackage[color=white, linecolor=red, bordercolor=red]{todonotes}
+% usage \todo and \todoinline
 
 \title{Maintaining Mathematical Databases}
 \author{Edgar Costa and David Roe}
@@ -45,7 +46,7 @@ The LMFDB hosts a variety of databases and connects them through the Langlands p
 
 \section{Other mathematical databases}
 
-\todo{What about if we instead of listing all these databases we just use them as examples? for certain things? Or did we have some other goal in mind?}
+\todoinline{What about if we instead of listing all these databases we just use them as examples? for certain things? Or did we have some other goal in mind?}
 
 \subsection{The On-Line Encyclopedia of Integer Sequences}
 The The On-Line Encyclopedia of Integer Sequences (OEIS) \url{oeis.org} is an online database of integer sequences, containing over 300,000 sequences and steadily growing.
@@ -67,7 +68,7 @@ searching on
 \subsection{Encyclopedia of Triangle Centers}
 
 The Encyclopedia of Triangle Centers (ETC) \url{http://faculty.evansville.edu/ck6/encyclopedia/ETC.html} is an online database of triangle centers, this is a point in the plane that is in some sense a center of a triangle akin to the centers other plane figures.
-The ETC extends the list of 400 triangle centers originally published in \cite{kimberling-98} and now covers 32000 triangle centers.
+The ETC extends the list of 400 triangle centers originally published in~\cite{kimberling-98} and now covers 32000 triangle centers.
 
 \todo{I'm not sure what else to say about this one, and this one is quite "simple"}
 
