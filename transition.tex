@@ -31,7 +31,9 @@
 
 \section{Introduction}
 
-Clarify that we're talking about hosting mathematical data, rather than written mathematical content (such as Wikipedia, Mathworld, MathSciNet, arXiv) or something like the Mathematical Genealogy Project
+Clarify that we're talking about hosting mathematical data, rather than written mathematical content (such as Wikipedia, Mathworld, MathSciNet, arXiv) or something like the Mathematical Genealogy Project.
+
+Audience: mathematicians wanting to create databases, anyone who might be considering switching from MongoDB to PostgreSQL, mathematicians interested in large software projects who might be interested in some of the lessons we've learned from the LMFDB.
 
 \section{The LMFDB project}
 The Langlands program, first formulated by Robert Langlands in the 1960s, is a set of widespread conjectures aimed at understanding and explaining the interconnections between a dizzying array of subfields of mathematics, including number theory, representation theory, algebraic geometry, and harmonic analysis---and in the 21st century its reach continues to expand.
@@ -212,14 +214,50 @@ Given the maturity of PostgreSQL there are numerous open source front-ends and t
 
 \subsection{Transition}
 
-\begin{itemize}
-\item Exporting data to plain text, readable using PostgreSQL' COPY FROM.
-\item Choice of schema.  LMFDB's Inventory was very useful here.  Had to choose between jsonb and arrays; initially chose to just use jsonb for simplicity but more recently have used arrays for smaller storage footprint.  Tried to normalize data to some extent (away from using strings for so much).
-\item Data irregularities slowed the process down
-\item Added abstraction layers.  psycopg2 is very low level (provides a way to execute SQL commands from Python and get the results back).  Because the lmfdb has almost no queries that cross multiple databases, was able to port MongoDB dictionary queries: implemented a parser that generates simple SQL.  Means that most LMFDB developers don't need to learn SQL.
-\item Build data management tools into the interface (changing schema, importing new data from Python and from files).  Replaces parts of scripts.
-\item Some optimizations (id ordering, split some tables in half)
-\end{itemize}
+Once the decision had been made to switch from MongoDB to PostgreSQL, we faced two main tasks: to port the data and to update the LMFDB codebase to use PostgreSQL.
+The majority of the work was done by the second author between March 2018 and August 2018, with assistance from the first author starting in July.
+
+Since PostgreSQL requires the specification of schemas, the initial step of the data migration involved defining the schema for each table.
+In practice, most of the tables had a schema already, which were made visible by a custom inventory module within the LMFDB.%
+\footnote{The inventory displayed the kinds of documents within each collection, the fields present in each kind of document, the indexes present in each collection, and both machine and human generated information on the types of each field.
+It was a very useful resource for constructing schema.}
+Unfortunately, the accuracy of these schema varied: some collections had multiple independent kinds of records within the same table, while others had typos in some of the field names.
+Moreover, the inventory system itself proved to inaccurately reflect the types of some columns, since it inferred the type from finding a single record.
+For example, it concluded that a certain field was a real number, while some documents had complex values.
+Eventually we overcame these issues were overcome and created a schema for each PostgreSQL table.
+
+In some cases, there were multiple possible types to choose from for a given column.
+PostgreSQL 9.4 added support for a binary json type, which allows for unstructured data to be stored in a column.
+It provided an alternative to arrays that could also store an analogue of Python's dictionaries, with strings as keys.
+For simplicity, we initially chose to use this jsonb type instead of arrays, since it simplified some of the supporting code.
+However, over the past year we have realized that when arrays are possible (namely, when type is uniform across all entries), they provide some important advantages.
+Namely, arrays are more space efficient than the jsonb type, and indexes on arrays support more operations than indexes on a jsonb column.
+We are gradually transitioning jsonb to array columns where useful.
+
+We also took advantage of the transition to change some data types that had been chosen due to the deficiencies in MongoDB.
+For example, many large integers had been stored as strings since MongoDB lacked an arbitrary precision data type.
+With the switch to PostgreSQL, we were able to use the numeric type instead, which simplified code used to sort and compute with the results.
+
+Since one of the goals of the switch was improved performance, we made some changes to the schemas to help speed up queries.
+In particular, we split some of the largest tables in half, putting columns that were used for searching into a search table and columns that were only used for display into an extras table.
+This greatly reduced the size of the search table, improving index efficiency and speeding sequential queries that had to traverse the whole table.
+A second optimization was only feasible because the data in the LMFDB changes very rarely, and because the search pages come with a standard order.
+Many tables are ordered lexicographically by four or five columns.
+We added a primary key column to each table, and for large tables we ordered this primary key by the default sort order for that table.
+This feature decreased the size of indexes and improved their performance, since search results could be ordered by a single numeric column rather than a combination of many columns.
+
+With the schemas created and export scripts written, the actual changeover of the data went fairly smoothly.
+PostgreSQL provides a COPY FROM command to load data from a text file, which runs very quickly.
+After several false starts, exporting 400GB of data to text files took three or four days, copying it between servers on opposite sides of the Atlantic took less than a day and loading it into PostgreSQL took less than a day.
+
+Adapting the LMFDB codebase to use PostgreSQL took longer, and we are still finishing up a few bits of that part of the transition.
+The backend code for the LMFDB is written in Python, and the Python bindings for MongoDB and PostgreSQL take a very different approach.
+Pymongo offers a high level interface to the database that integrates python data structures.
+Queries are performed by constructing dictionaries that specify the values of certain columns, and have special keys for adding more complicated constraints such as inequalities or boolean combinations of conditions.
+Psycopg2, on the other hand, is a thin interface that offers the user the ability to execute SQL statements.
+Constructing queries using dictionaries worked well as a model for the LMFDB, since the search pages provided many inputs that could be processed independently into a dictionary.
+Moreover, we did not want to require LMFDB developers to learn SQL.
+We therefore implemented a high level interface to PostgreSQL that translated a dictionary-based query system similar to Pymongo's into SQL SELECT statements.
 
 \section{Benefits}
 
@@ -233,7 +271,9 @@ Of course, the LMFDB has used functions since the beginning, but often these fun
 
 The task of switching from MongoDB to PostgreSQL was made more difficult by this low level of abstraction, but it also presented an opportunity.
 Since the database change necessitated changing a large number of files throughout the project, it offered a perfect time to make additional changes.
-We highlight three in particular to illustrate the kinds of encapsulation that accompanied the database change.
+We highlight four in particular to illustrate the kinds of encapsulation that accompanied the database change.
+
+First, we centralized many of the scripts used to upload data into a suite of data management tools. \todo{Finish description of data management tools (changing schema, importing new data from Python and from files)}
 
 Each section of the LMFDB has a search page, where users can input constraints they would like their curve, field or group to satisfy.
 Some input boxes require an integer or list of integers; others need a label string in a particular format; others a rational number.
