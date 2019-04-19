@@ -35,6 +35,8 @@ Clarify that we're talking about hosting mathematical data, rather than written 
 
 Audience: mathematicians wanting to create databases, anyone who might be considering switching from MongoDB to PostgreSQL, mathematicians interested in large software projects who might be interested in some of the lessons we've learned from the LMFDB.
 
+\todoinline{mention search by content}
+
 \section{The LMFDB project}
 The Langlands program, first formulated by Robert Langlands in the 1960s, is a set of widespread conjectures aimed at understanding and explaining the interconnections between a dizzying array of subfields of mathematics, including number theory, representation theory, algebraic geometry, and harmonic analysis---and in the 21st century its reach continues to expand.
 The Langlands program has been called ``one of the biggest ideas to come out of mathematics in the last fifty years'' and ``the Grand Unified Theory of mathematics'' \cite[p. 3]{frenkel}.
@@ -99,16 +101,57 @@ The ETC extends the list of 400 triangle centers originally published in~\cite{k
 
 See question of Tim Gowers (https://mathoverflow.net/questions/68442/what-could-be-some-potentially-useful-mathematical-databases) about what databases might be desirable to have.
 
-\section{Hosting}
+\section{Nuts and bolts}
+
+When it comes to hosting a mathematical database there is a wide range of options available.
+For many ages the only option available was to use a print format, for example in a book or an article, and rely on a publisher to distribute its content and to make it available to the rest of math community.
+Once a publisher found, this solution was practical and simple, however given how uncommon typos were, this is far from an ideal solution.
+\todo{mention hard to fix errors}
+Nowadays, a type of digital medium is preferred and distribution relies mostly on the internet.
+This raises three coupled questions regarding the choices for back end, front end, and hosting.
+In other words,
+\begin{itemize}
+  \item back end --- How to encode and manipulate the database in a machine readable format?
+  \item front end --- How the user interacts with the database?
+  \item hosting --- Where to physically store the database?
+\end{itemize}
+we will overview some of the possible answers for each question.
+
+\subsection{Back End}
+
+We start by providing some options in how to encode the database in a machine readable format.
+We will sort the options base on easy is to search on content.
 
 \begin{itemize}
-\item On a personal webpage (easy for many academics), but limits scope (aren't running your own webserver)
-\item Using a web framework (e.g. Github, Cocalc, Wordpress/wikidot/blogs)
-\item On a university/personal server.  Complete control, but have to deal with down time, buying new servers, backups, security updates, DNS....
-\item Servers in the cloud (e.g. Google, AWS).  Reduces hassle, but costs money.
+  \item human readable files
+    ---
+     Storing the data set in a human readable format, like a  plain text file or a comma-separated values file, is one of the simplest possible solutions.
+    Furthermore, it also does not require special software to access the data, very similar to a table in print.
+    However, it might be cumbersome and impractical to search or manipulate the data without software aid.
+    \todo{add examples}
+  \item application dependent files
+    ---
+    A more evolved solution is to store the data set in application dependent format.
+    In many cases such a choice enables direct manipulation of the desired objects.
+    For example if one use SAGE pickles, a generic data format that allows to save and load generic SAGE objects.
+    However, the dataset most likely will not be stored in an efficient way to search by content, and thus must content searches would need to loop over every item on the dataset, what we call a sequential search.
+    \todo{mention The GAP Small Groups Library}
+  \item database structure
+    ---
+    For last one may store the dataset in database search format, i.e., in a format optimized to search the data by content.
+    There are many ways to achieve this, in this article we fill focus on two types:
+    \begin{itemize}
+      \item relational database --- a collection of ledger-style tables with a fixed schema, where the structure in row of such table is constant througout.
+        These kind of databases have dominated the industry for decades \todo{who am I to say this?}and some of their famous instantiations are Oracle, MySQL, PostgreSQL, and SQLite.
+      \item document oriented database --- a schema free database, where each object is stored in a single instance in the database, and every stored object can be different from every other. 
+        e.g. MongoDB: schema free)
+    \end{itemize}
+    in 
+    \todo{mention additional software might be required for users to to manipulate the data?}
 \end{itemize}
 
-\section{Front End}
+
+\subsection{Front End}
 
 \begin{itemize}
 \item E-mail me if you want the data
@@ -118,17 +161,23 @@ See question of Tim Gowers (https://mathoverflow.net/questions/68442/what-could-
 \item web application (LMFDB uses Python/Flask/Jinja with javascript/CSS/etc).  Allows for dynamic generation of pages, links, nicer representation of data
 \end{itemize}
 
-\section{Back End}
+\subsection{Hosting}
 
 \begin{itemize}
-\item static files (plain text, sql-lite, Sage pickles,....)
-\item Wiki software
-\item document oriented database (e.g. MongoDB: schema free)
-\item relational database (e.g. PostgreSQL)
+  \item personal hard-drive --- no initial set up cost, but the  
+  \item personal webpage --- On a personal webpage (easy for many academics), but limits scope (aren't running your own webserver)
+  \item Using a web framework (e.g. Github, Cocalc, Wordpress/wikidot/blogs)
+  \item On a university/personal server.  Complete control, but have to deal with down time, buying new servers, backups, security updates, DNS....
+  \item Servers in the cloud (e.g. Google, AWS).  Reduces hassle, but costs money.
 \end{itemize}
 
 
+
+
+
+
 \section{MongoDB vs PostgreSQL}
+\label{sec:MvsP}
 
 In 2009, when MongoDB was initially released as an open source project in it presented itself as an exciting new option to consistently store mathematical objects.
 As a document-oriented database, where each document is stored independently in a JSON-like schemata, it did not require a schema, a boon when creating new collections of mathematical objects where the data requirements only gradually became clear.
