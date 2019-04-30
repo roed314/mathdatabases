@@ -90,9 +90,10 @@ The ETC extends the list of 400 triangle centers originally published in~\cite{k
 \item FindStat (\url{http://www.findstat.org/})
 \item Matroids (\url{https://www.math.ucdavis.edu/~mkoeppe/art/Matroids/})
 \item GraphArichive (\url{http://www.graph-archive.org/doku.php}) - example that died
+\item House of Graphs (\url{https://hog.grinvin.org/})
 \item Table of Knot Invariants (\url{http://www.indiana.edu/~knotinfo/})
-\item Databases included in GAP/Sage/etc
 \item Knot Atlas (\url{http://katlas.org/})
+\item Databases included in GAP/Sage/Magma/etc
 \item Predecessors to the LMFDB (Cremona's tables, \url{https://math.la.asu.edu/~jj/localfields/} and other Jones' databases, \url{https://wstein.org/Tables/})
 \item Calabi-Yau data \url{http://hep.itp.tuwien.ac.at/~kreuzer/CY/}
 \item The K3 Database \url{https://magma.maths.usyd.edu.au/magma/handbook/text/1410}
@@ -188,60 +189,61 @@ As an relational database, PostgreSQL stores data in structure way in tables wit
 
 \subsection{Comparing two database systems}
 
-The crucial difference between MongoDB and PostgreSQL it is their paradigm.
-MongoDB as a document-oriented database is meant to facilitate the storage of unstructured data, where the fields and types present in each document can vary across a collection.
+MongoDB and PostgreSQL offer two different database paradigms.
+MongoDB, as a document-oriented database, is meant to facilitate the storage of unstructured data, where the fields and types present in each document can vary across a collection.
 This flexibility is extremely convenient, but can also easily lead to errors and unnecessary overhead for a structured database.
 For example, field names were kept short in MongoDB to save on space usage and multiple typos in the field names were found during the transition to PostgreSQL.
-Furthermore, differing layouts across documents requires a more complicated processing code.
-This overhead was unnecessary as the LMFDB was already using a schema before the transition, to the extent that an inventory application was written to extract the schema from the data in MongoDB.
-However, supporting the schema at the level of the database software significantly improves robustness and performance.
-Furthermore, PostgreSQL overcame much of MongoDB's advantage of schemeless collections with the inclusion of the JSON and JSONB types.
-As a consequence of the paradigm shift, storing the data in PostgreSQL requires substantially less space than in MongoDB.
+Furthermore, differing layouts across documents requires more complicated processing code.
+In contrast, PostgreSQL is a relational database, where fixed schemas enable queries across multiple tables.  
+Since the LMFDB was already a uniform set of fields in MongoDB (to the extent that an inventory application was written to extract a schema from the data), creating a formal schema was fairly straightforward.
+Database-level schema support significantly improves robustness and performance, and PostgreSQL's JSONB type allows for schemaless columns when desired.
+One benefit of switching has been that storing the data in PostgreSQL requires substantially less space than in MongoDB.
 For example, when converting our biggest MongoDB collection \texttt{Lfunctions.Lfunctions} to the PostgreSQL table \texttt{lfunc\_lfunctions}, we observed a space savings of about 42\%, going from 194GiB to 113GiB.
-\todo{mention that in MongoDB we pay about 2k per year on storage space}
+These savings translate both to monetary savings (we were spending about \$2000 per year in MongoDB paying for storage space) and to query speed if a sequential search is required.
 
-Two main factors account for this improvement.
+Two main factors account for the smaller storage requirements.
 Because the fields in a MongoDB document can vary, the names of these fields must be stored in each document.
 For some of the LMFDB's collections, these names accounted for a substantial fraction of the storage requirement.
 In addition to the space benefits, the switch to PostgreSQL also relaxes the pressure to minimize the lengths of these names, improving readability.
 
 The second factor contributing to space savings is the reduced use of strings in the data itself.
-As a mathematical database, the LMFDB was heavily impacted by MongoDB's limited type support and its indexes \todo{add ref}
-For example, the lack of support for arbitrary precision integers.
-In order to work around this issue, a lot of numerical data was stored as strings.
+As a mathematical database, the LMFDB was heavily impacted by MongoDB's lack of support for arbitrary precision integers.
+In order to work around this deficiency, a lot of numerical data was stored as strings.
 In addition to the storage consequences, various workarounds were required in order to sort and search the data correctly.
 The elimination of these hacks have simplified a lot of the supporting code.
 
 
-
-
-One of the main tools for improving search performance on databases is the use of indexes.
+While smaller tables help with query performance, indexes provide a more powerful tool for speeding up searches.
 Indexes facilitate the location of records with constraints on a specified set of columns by storing additional data.
-Having such indexes available is key to provide quick searche results for typical queries.
-For example, both MongoDB and PostgreSQL support indexes based on binary trees, which work well for totally ordered data such as integers and strings.
-However, there is another query type that is not well supported by binary trees.
-\todo{wouldn't be better to just explain this with lists, and then give the example of Number fields?}
-If $K$ is a number field, the LMFDB stores a list $P_K$ of ramified primes.
-We would like to be able to specify a list $Q$ of primes and be able to find all $K$ with $Q \subseteq P_K$, or all $K$ with $Q \supseteq P_K$.
-MongoDB executed these searches by narrowing the results one prime at a time \todo{confirm that this is actually what MongoDB is doing}
-In contrast, GIN indexes in PostgreSQL support such queries efficiently.
+Having such indexes available is key to provide quick search results for typical queries.
+For example, both MongoDB and PostgreSQL support indexes based on binary trees, which work well for totally ordered data such as integers and strings. \todo{add ref}
+However, there is another query type that is not well supported by binary trees: given a column representing a set of integers, search for rows that contain a particular set, or are contained in a particular set.
+For example, we store the set of ramified primes for number fields, and want to be able to specify specific primes as either ramified or unramified.
+GIN indexes in PostgreSQL support such queries efficiently, while they timed out after 30 seconds when running in MongoDB.
 
 
+The transition to PostgreSQL also led to a significant improvement in indexless queries.
+Such queries are important since non-typical queries can be the most interesting mathematically, and since it is impossible to construct all indexes in advance because the LMFDB offers the user a lot of freedom to select search parameters.
+When comparing sequential queries (those without indexes), it's important to specify the memory model used by each database.
+MongoDB offers two different storage engines: Memory Mapping (MMAP), which uses large amounts of memory in order to put as much data as possible into RAM, and WiredTiger, which balances memory usage with filesystem caching.
+In a system with hundreds of gigabytes of memory, MMAP significantly outperforms WiredTiger.
+However, in a more constrained memory environment, we found that WiredTiger outperforms MMAP on most queries, while also providing data compression at the disk level.
+For these reasons, WiredTiger was the storage engine behind \url{www.LMFDB.org}, and forms the basis for our comparison with PostgreSQL. \todo{Add numerical performance comparisons}
 
+While search performance is key for website usability, the process of uploading data and creating indexes is also important in order to make the development sustainable and to aid in the implementation of new features.
+PostgreSQL's \texttt{COPY FROM} command allows for rapid importing of data from plain-text files without a Python intermediary, which is useful when the data is being generated by some other system such as Magma \cite{magma}.
+Creating indexes in PostgreSQL is also dramatically faster than in MongoDB. \todo{quantify}
+Moreover, PostgreSQL supports transactions,\footnote{MongoDB 4.0 added support for transactions but was released after we switched to PostgreSQL.} allowing for atomic changes to multiple rows in a table.
+This feature makes it possible to safely make some modifications in place, rather than creating a copy of the whole table when changes are made.
+PostgreSQL also offers numerous open source front-ends and administration tools \cite{pgadmin,adminer} that lower the learning curve for the SQL language.
+Database management has been substantially improved by the transition.
 
+In addition to performance improvements, PostgreSQL makes new kinds of queries possible.
+Relational databases allow joining tables, returning values from both tables when they share some specified relationship.
+The existing schemas, having been designed for MongoDB, do not take advantage of this feature, but new tables on finite groups and on p-adic tori will.
+Going forward, the ability to make connections between different kinds of mathematics is one of the core aims of the LMFDB, and a relational database will help us achieve this goal.
 
-
-For last, MongoDB offered us two different storage engines Memory Mapping (MMAP) and WiredTiger.
-The major difference between these systems is that MMAP automatically tries to (dynamically) use all free memory on the machine, while WiredTiger tries to balance the memory usage with filesystem cache, this is very similar to what PostgreSQL also does.
-In a system with enough memory to fit a big chunk of the data set, MMAP significantly outperforms WiredTiger.
-However, in a more realist low memory environment system, we found that WiredTiger outperforms MMAP in most queries, while also providing data compression at the disk level.
-For these reasons, WiredTiger was the storage engine behind \url{www.LMFDB.org}.
-In the transition to PostgreSQL we noticed a significant improvement in indexless queries, which is critical as we don't know a priori what kind of queries the user will request so it's hard to build all indexes. Furthemore, the non-typical queries can be the most interesting mathematically.
-
-
-Given the maturity of PostgreSQL there are numerous open source front-ends and tools for administering that lower the introduction barrier to the SQL language, for example \url{https://www.adminer.org/} and \url{https://www.pgadmin.org/}.
-
-\begin{itemize}
+%\begin{itemize}
 %\item Have to specify a schema in PostgreSQL in advance.  This can be a hassle, but also can prevent errors (e.g. typos in column names, more complicated processing code because data isn't uniform)
 %\item MongoDB required more storage space since every document had to include the column names (quantify storage space change; quantify how much we're paying)
 %\item Integers limited to 64 bits, so got in the habit of storing many things as strings (which made sorting tricky among other issues)
@@ -249,15 +251,15 @@ Given the maturity of PostgreSQL there are numerous open source front-ends and t
 %\item MongoDB required more RAM (Wired-Tiger; MMAP). Postgres can be faster with more RAM but works okay with less.
 %\item Indexes on lists didn't work as we wanted (e.g. list of ramified primes) - would work for "what are all the fields ramified at 5" but not "what are all the fields ramified at 2 and 3".  Also inefficient (constructs query inefficiently since there are many more fields than primes).  Postgres has multiple index types, including gin which work well for this purpose
 %\item Performance improvements, important since we don't know what kind of queries the user will request so it's hard to build all indexes.  Partly because of lower storage, performance also improved even without indexes.  Non-typical queries can be the most interesting mathematically.
-\item Harder to do relational queries in MongoDB; since we ported the table layout relational queries are still not used much in Postgres
+%\item Harder to do relational queries in MongoDB; since we ported the table layout relational queries are still not used much in Postgres
 %\item Postgres overcame much of MongoDB's advantage with the inclusion of the json and jsonb types.
-\item MongoDB was faster at counting results.  Work around this by caching counts in a table (possible since data doesn't change frequently)
+%%\item MongoDB was faster at counting results.  Work around this by caching counts in a table (possible since data doesn't change frequently)
 %\item Useful new utilities (pgAdmin 4)
-\item Fast loading from a file (COPY FROM), and direct data from Magma without a Python intermediary
-  % Loaded data into mf_hecke_cc in 29032.052 secs from /scratch/mf/cc/mf_hecke_cc.txt
-\item (TODO) Actually compare performance while we still have the mongo instance around.
-\item Transactions (bugs don't cause data reliability problems) and data upload much faster
-\end{itemize}
+%\item Fast loading from a file (COPY FROM), and direct data from Magma without a Python intermediary
+% Loaded data into mf_hecke_cc in 29032.052 secs from /scratch/mf/cc/mf_hecke_cc.txt
+%\item (TODO) Actually compare performance while we still have the mongo instance around.
+%\item Transactions (bugs don't cause data reliability problems) and data upload much faster
+%\end{itemize}
 
 
 
@@ -373,7 +375,7 @@ Some of these verifications are internal, such as checking that the defining pol
 Others rely on connections with other tables in the database, such as checking that invariants match up between an elliptic curve and its corresponding modular form.
 The switch to PostgreSQL made it possible to create a framework to write such consistency checks and run them whenever new data is added.
 
-\bibliographystyle{alpha}
+\bibliographystyle{plain}
 \bibliography{biblio}
 
 \end{document}
