@@ -35,10 +35,10 @@ Mathematics has a long history of using computations to aid in forming conjectur
 In the past few decades, computers have taken on a central role, both in performing many calculations and in hosting the results.
 As computational and storage capacity has increased, the size of these results has grown to the point where the task of searching and maintaining the data requires specialized knowledge.
 We discuss some of the challenges involved, as well as the main tools available to address them.
-We focus on one particular case study: the effort to migrate the L-functions and modular forms database from MongoDB to PostgreSQL.
+We focus on one particular case study: the effort to migrate the L-functions and modular forms database from MongoDB to PostgreSQL.\todo{add ref}
 
 We will be primarily interested in datasets consisting of information on mathematical objects, such as specific number fields, graphs or curves, rather than on mathematical statements.
-There are many valuable resources focusing on theorems and propositions, from general encyclopedias such as Wikipedia and Mathworld to the preprint server arXiv to domain specific references such as Groupprops. \todo{add citations}
+There are many valuable resources focusing on theorems and propositions, from general encyclopedias such as Wikipedia or Encyclopaedia of Mathematics to the preprint server arXiv to domain specific references such as Groupprops. \todo{add citations}
 However, the design imperatives for such projects tend to be very different from \todo{continue....} 
 
 Clarify that we're talking about hosting mathematical data, rather than written mathematical content (such as Wikipedia, Mathworld, MathSciNet, arXiv) or something like the Mathematical Genealogy Project.
@@ -51,10 +51,8 @@ Audience: mathematicians wanting to create databases, anyone who might be consid
 The Langlands program, first formulated by Robert Langlands in the 1960s, is a set of widespread conjectures aimed at understanding and explaining the interconnections between a dizzying array of subfields of mathematics, including number theory, representation theory, algebraic geometry, and harmonic analysis---and in the 21st century its reach continues to expand.
 The Langlands program has been called ``one of the biggest ideas to come out of mathematics in the last fifty years'' and ``the Grand Unified Theory of mathematics'' \cite[p. 3]{frenkel}.
 
-
 To provide compelling visual and computational displays of the Langlands program ``in action'', a database was created called the \emph{$L$-functions and Modular Forms Database (LMFDB)}, available at the website \url{http://www.lmfdb.org/}.
-The LMFDB was first conceived in 2007~\cite{cremona-16} and remains the object of a significant amount of ongoing work by over one hundred mathematicians \cite[\S Acknowledgments]{lmfdb}.
-
+The LMFDB was first conceived in 2007~\cite{cremona-16} and remains the object of a significant amount of ongoing work by over one hundred mathematicians~\cite[\S Acknowledgments]{lmfdb}.
 
 The LMFDB hosts a variety of databases and connects them through the Langlands program.
 
@@ -114,12 +112,13 @@ See question of Tim Gowers (https://mathoverflow.net/questions/68442/what-could-
 
 \section{Nuts and bolts}
 
-When it comes to hosting a mathematical database there are a wide range of options available.
-Until the last several decades, the only option available was to use a print format, for example in a book or an article, and rely on a publisher to distribute its content and to make it available to the rest of mathematical community.
-Since the publisher takes care of most of the technical issues, this method offers the benefit of simplicity to the author, but distribution in print offers a number of disadvantages compared to digital distribution via the internet.
-First, any mistakes are difficult to fix, and adding new features or data is a long process.  \todo{mention hard to fix errors}
-Second, print distribution is less immediately accessible than online distribution, putting barriers in the way of the database user.
-But since the digital distribution of mathematical data is not taken on by publishers, authors have many more choices to make.
+When it comes to hosting a mathematical database, there is a wide range of options available.
+Until the last several decades, the only option available was to use a print format, for example in a book or an article, and rely on a publisher to distribute its content and to make it available to the rest of scientific community.
+Since the publisher takes care of most of the technical issues, this method offers the benefit of simplicity to the author, but distribution in print provides a number of disadvantages compared to digital distribution via the internet.
+For instance, the act of publishing through print is a lengthy process, and the data is less immediately accessible than online distribution, putting barriers in the way of the database user.
+Furthermore, once the data is published is extremely difficult to address  mistakes, add new data or features.
+
+On the other hand, given that the digital distribution of mathematical data is not taken on by publishers, authors have many more choices to make.
 We break down these choices into the following related categories:
 \begin{itemize}
   \item back end --- How to encode and manipulate the database in a machine readable format.
@@ -135,29 +134,28 @@ We organize the options for how to encode the database in a machine readable for
 \begin{itemize}
   \item human readable files
     ---
-     Storing the data set in a human readable format, like a  plain text file or a comma-separated values file, is one of the simplest possible solutions.
+     Storing the data set in a human readable format, like a  plain text file or a comma-separated values file, is one of the most straightforward possible solutions.
     Furthermore, it also does not require special software to access the data, very similar to a table in print.
     However, it can be cumbersome and impractical to search or manipulate the data without additional tools.
-    \todo{add examples}
   \item application dependent files
     ---
-    A more complicated solution is to store the dataset in an application dependent format.
-    In many cases such a choice enables direct manipulation of the desired objects.
+    A more advanced solution is to store the dataset in an application dependent format.
+    For example, the Small Groups Library available in the GAP computer algebra system. \todo{addref}
+    In many cases, such a choice enables direct manipulation of the desired objects.
     For example, using SageMath pickles makes it easy to load the data into an active SageMath session.
     However, the dataset will not likely be efficiently searchable, and most content searches would need to loop over every item in the dataset in a sequential search.
-    \todo{mention The GAP Small Groups Library}
   \item database structure
     ---
-    Finally, one may store the dataset in database format, i.e. in a format optimized for searching.
-    There are many types of database available; in this article we fill focus on two:
+    Finally, one may store the dataset in database format, i.e., in a format optimized for searching.
+    However, such sophisticated solution will most likely require additional software for users to to manipulate the data.
+    There are many types of database available; in this article, we fill focus on two:
     \begin{itemize}
       \item relational database --- a collection of ledger-style tables with a fixed schema, where the structure in each row of is constant.
-        These kind of databases have dominated the industry for decades \todo{who am I to say this?} and some of their famous instantiations are Oracle, MySQL, PostgreSQL, and SQLite.
+        This kind of databases have been prevalent for decades and some of their famous instantiations are Oracle, MySQL, PostgreSQL, and SQLite.
       \item document oriented database --- a schema free database, where each object is stored in a single instance in the database, and every stored object can be different from every other.
-        The most popular example is MongoDB.
+        MongoDB is one of the most famous instantiations of such paradigm.
     \end{itemize}
-    In Section \ref{sec:MvsP} we will contrast PostgreSQL and MongoDB.
-    \todo{mention additional software might be required for users to to manipulate the data?}
+    In Section~\ref{sec:MvsP} we will contrast PostgreSQL and MongoDB.
 \end{itemize}
 
 
