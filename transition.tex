@@ -161,13 +161,40 @@ We organize the options for how to encode the database in a machine readable for
 
 \subsection{Front End}
 
+We now go through some of the options for how the user can interact with a database.
 \begin{itemize}
-\item E-mail me if you want the data
+  \item direct access
+    ---
+    The author may decide to provide direct access to the database.
+    For example, the author may make the database files available through E-mail or a web page; or
+    allow direct read access to a database server.
+
+  \item computer algebra system
+    ---
+    If the database is provided in a computer algebra system dependent files, these might evolve into being part of algebra system itself.
+    For example, Small Groups Library available in GAP or the K3 Database in Magma. \todo{addref}
+
+  \item website
+    ---
+    The user may also interact with the database through a collection of web pages displaying the data.
+    These web pages might either static or dynamically generated.
+    For example, when can use 
+    There are many ways to do this, here are couple:
+    \begin{itemize}
+      \item static webpages
+        ---
+        For example, for each object 
+      \item
+    This web pages might be static 
+    with information on a subjec
+  \item web application
+    ---
+(LMFDB uses Python/Flask/Jinja with javascript/CSS/etc).
+  Allows for dynamic generation of pages, links, nicer representation of data
+
 \item HTML front page with downloads (static)
 \item Wiki page (dynamic but human generated)
-\item within computer algebra system (GAP/Sage/Magma)
-\item web application (LMFDB uses Python/Flask/Jinja with javascript/CSS/etc).  Allows for dynamic generation of pages, links, nicer representation of data
-\end{itemize}
+\item web application \end{itemize}
 
 \subsection{Hosting}
 
