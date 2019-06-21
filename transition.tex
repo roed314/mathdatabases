@@ -173,37 +173,61 @@ We now go through some of the options for how the user can interact with a datab
     ---
     If the database is provided in a computer algebra system dependent files, these might evolve into being part of algebra system itself.
     For example, Small Groups Library available in GAP or the K3 Database in Magma. \todo{addref}
+    This option is extremely convenient for the user, however, this is not suitable for very large databases, as these would increase the size of the computer algebra system in question.
 
   \item website
     ---
     The user may also interact with the database through a collection of web pages displaying the data.
-    These web pages might either static or dynamically generated.
-    For example, when can use 
-    There are many ways to do this, here are couple:
+    These web pages can range widely in complexity.
+    For example, one can manually curate each page individually
+    These pages can be humanly curate each object page, as in
     \begin{itemize}
-      \item static webpages
-        ---
-        For example, for each object 
-      \item
-    This web pages might be static 
-    with information on a subjec
-  \item web application
-    ---
-(LMFDB uses Python/Flask/Jinja with javascript/CSS/etc).
-  Allows for dynamic generation of pages, links, nicer representation of data
-
-\item HTML front page with downloads (static)
-\item Wiki page (dynamic but human generated)
-\item web application \end{itemize}
+      \item Cantor’s Attice \url{http://cantorsattic.info/}
+      \item Fano Varieties and Extremeal Laurent Polynomials \url{http://coates.ma.ic.ac.uk/fanosearch/}
+    \end{itemize}
+    or, automatically generate them as static web pages, as in
+    \begin{itemize}
+      \item Encyclopedia of Triangle Centers \url{https://faculty.evansville.edu/ck6/encyclopedia/ETC.html}
+      \item Graph Classes \url{http://graphclasses.org/index.html}
+      \item SyzygyData \url{http://syzygydata.com/}
+      \item Table of Knot Invariants \url{http://www.indiana.edu/~knotinfo/}
+    \end{itemize}
+    Alternatively, one can instead use an web application to generate each page whet tis accessed.
+    This is essential for large datasets, as generating and storing a static web page for each object, might be unfeasible.
+    LMFDB follows such approach, where all the content is generated on the fly through a dedicated web application based of Flask \todo{addref \url{http://flask.pocoo.org/}}, and only some small amount of the content is humanly curated, definitions and others.
+    Other examples of mathematical databases using such approach contain:
+    \begin{itemize}
+      \item Knot Atlas \url{http://katlas.org}
+      \item House of Graphs (\url{https://hog.grinvin.org/})
+    \end{itemize}
+\end{itemize}
 
 \subsection{Hosting}
 
+
+For last we discuss some of the options regarding where to physically store the database.
+
 \begin{itemize}
-  \item personal hard-drive --- no initial set up cost, but the  
-  \item personal webpage --- On a personal webpage (easy for many academics), but limits scope (aren't running your own webserver)
-  \item Using a web framework (e.g. Github, Cocalc, Wordpress/wikidot/blogs)
-  \item On a university/personal server.  Complete control, but have to deal with down time, buying new servers, backups, security updates, DNS....
-  \item Servers in the cloud (e.g. Google, AWS).  Reduces hassle, but costs money.
+  \item personal hard-drive
+    ---
+    This is one of the simples options, as it has no initial set up cost,
+    however, it severely limits the accessibility of the database to others
+  \item personal web page
+    ---
+    If one already maintains a personal web page, a convenient option is to also use it to host their database.
+    However, the scope might be limited, as one does not has full access to the hosting servers.
+  \item web framework
+    ---
+    Another convenient option is to use a web framework service (e.g. Github, Cocalc, Wordpress/wikidot/blogs).
+    These options offer a lower initial set up cost with a minimal long term maintenance cost, however, the scope is also limited by the framework.
+  \item On a university/personal server
+    ---
+    This solution provides complete control.
+    However, not only, there is a high initial monetary/effort cost of buying the servers and setting them up, one also needs to upkeep the servers for the rest of their life.
+    Furthermore, the scope might be limited by some of the initial hardware choices.
+  \item using a hosting service
+    ---
+    Servers in the cloud (e.g. Google, AWS) provides complete control, this has an monetary associated maintenance costs, however, one does not need to worry about mainentance tasks, uptime, and etc.
 \end{itemize}
 
 
