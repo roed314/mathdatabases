@@ -240,10 +240,10 @@ For last we discuss some of the options regarding where to physically store the 
 
 In 2009, when MongoDB was initially released as an open source project in it presented itself as an exciting new option to consistently store mathematical objects.
 As a document-oriented database, where each document is stored independently in a JSON-like schemata, it did not require a schema, a boon when creating new collections of mathematical objects where the data requirements only gradually became clear.
-Moreover, Python bindings were available, a language that many computational number theorists were familiar with due to its use in SageMath.
-It worked well for many years, but as the LMFDB grew various shortcomings of using a non relational database became more problematic.
+Moreover, Python bindings were available, a language that many computational number theorists are familiar with due to its use in SageMath.
+This setup worked well for many years; however, as the LMFDB grew various shortcomings of using a non relational database became more evident.
 Over the last year, we have transitioned from MongoDB to PostgreSQL, a popular open source implementation of the SQL language that grew out of earlier projects founded in the 1970s and 80s.
-As an relational database, PostgreSQL stores data in structure way in tables with a specified schema: each row must have the same layout, with the types of columns constant across all rows.
+As a relational database, PostgreSQL stores data in a structured way, where the data is organized in tables, and each table has a specified schema, i.e., each row must have the same layout, with the types of columns constant across all rows.
 
 \subsection{Comparing two database systems}
 
@@ -252,7 +252,7 @@ MongoDB, as a document-oriented database, is meant to facilitate the storage of 
 This flexibility is extremely convenient, but can also easily lead to errors and unnecessary overhead for a structured database.
 For example, field names were kept short in MongoDB to save on space usage and multiple typos in the field names were found during the transition to PostgreSQL.
 Furthermore, differing layouts across documents requires more complicated processing code.
-In contrast, PostgreSQL is a relational database, where fixed schemas enable queries across multiple tables.  
+In contrast, PostgreSQL is a relational database, where fixed schemas enable queries across multiple tables.
 Since the LMFDB was already a uniform set of fields in MongoDB (to the extent that an inventory application was written to extract a schema from the data), creating a formal schema was fairly straightforward.
 Database-level schema support significantly improves robustness and performance, and PostgreSQL's JSONB type allows for schemaless columns when desired.
 One benefit of switching has been that storing the data in PostgreSQL requires substantially less space than in MongoDB.
