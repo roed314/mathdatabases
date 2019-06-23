@@ -35,15 +35,18 @@ Mathematics has a long history of using computations to aid in forming conjectur
 In the past few decades, computers have taken on a central role, both in performing many calculations and in hosting the results.
 As computational and storage capacity has increased, the size of these results has grown to the point where the task of searching and maintaining the data requires specialized knowledge.
 We discuss some of the challenges involved, as well as the main tools available to address them.
-We focus on one particular case study: the effort to migrate the L-functions and modular forms database from MongoDB to PostgreSQL.
+We focus on one particular case study: the effort to migrate the L-functions and modular forms database (LMFDB) from MongoDB to PostgreSQL.
 
 We will be primarily interested in datasets consisting of information on mathematical objects, such as specific number fields, graphs or curves, rather than on mathematical statements.
 There are many valuable resources focusing on theorems and propositions, from general encyclopedias such as Wikipedia and Mathworld to the preprint server arXiv to domain specific references such as Groupprops. \todo{add citations}
-However, the design imperatives for such projects tend to be very different from \todo{continue....} 
+However, the design imperatives for such projects tend to be very different from the type of database we're interested in.
+Since the content of theorem-oriented sites tends to be textual, the standard tools for internet searching such as Google tend to work effectively.
+Moreover, because humans are directly creating the content, the tools for inputting and managing data are different.
+Finally, when algorithms are generating data it is possible to end up with orders of magnitude more content, leading to various challenges of scale not faced by human-created datasets.
 
-Clarify that we're talking about hosting mathematical data, rather than written mathematical content (such as Wikipedia, Mathworld, MathSciNet, arXiv) or something like the Mathematical Genealogy Project.
+\todoinline{We plan to move the next section on mathematical databases here, giving brief summaries both to clarify what kinds of projects we actually are discussing, and as a way to introduce these projects to a reader who may find them interesting.}
 
-Audience: mathematicians wanting to create databases, anyone who might be considering switching from MongoDB to PostgreSQL, mathematicians interested in large software projects who might be interested in some of the lessons we've learned from the LMFDB.
+\todoinline{Explain our intended audience: mathematicians wanting to create databases, anyone who might be considering switching from MongoDB to PostgreSQL, mathematicians interested in large software projects who might be interested in some of the lessons we've learned from the LMFDB.}
 
 \todoinline{mention search by content}
 
@@ -108,6 +111,7 @@ The ETC extends the list of 400 triangle centers originally published in~\cite{k
 \item Calabi-Yau data \url{http://hep.itp.tuwien.ac.at/~kreuzer/CY/}
 \item The K3 Database \url{https://magma.maths.usyd.edu.au/magma/handbook/text/1410}
 \item Fano Varieties and Extremal Laurent Polynomials \url{http://coates.ma.ic.ac.uk/fanosearch/}
+\item Prime pages \url{https://primes.utm.edu/}
 \end{itemize}
 
 See question of Tim Gowers (https://mathoverflow.net/questions/68442/what-could-be-some-potentially-useful-mathematical-databases) about what databases might be desirable to have.
