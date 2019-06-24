@@ -253,37 +253,57 @@ This flexibility is extremely convenient, but can also easily lead to errors and
 For example, field names were kept short in MongoDB to save on space usage and multiple typos in the field names were found during the transition to PostgreSQL.
 Furthermore, differing layouts across documents requires more complicated processing code.
 In contrast, PostgreSQL is a relational database, where fixed schemas enable queries across multiple tables.
+For example, one can search and access data in relation to other data in the database.
 Since the LMFDB was already a uniform set of fields in MongoDB (to the extent that an inventory application was written to extract a schema from the data), creating a formal schema was fairly straightforward.
 Database-level schema support significantly improves robustness and performance, and PostgreSQL's JSONB type allows for schemaless columns when desired.
+
+
 One benefit of switching has been that storing the data in PostgreSQL requires substantially less space than in MongoDB.
 For example, when converting our biggest MongoDB collection \texttt{Lfunctions.Lfunctions} to the PostgreSQL table \texttt{lfunc\_lfunctions}, we observed a space savings of about 42\%, going from 194GiB to 113GiB.
 These savings translate both to monetary savings (we were spending about \$2000 per year in MongoDB paying for storage space) and to query speed if a sequential search is required.
 
-Two main factors account for the smaller storage requirements.
-Because the fields in a MongoDB document can vary, the names of these fields must be stored in each document.
-For some of the LMFDB's collections, these names accounted for a substantial fraction of the storage requirement.
-In addition to the space benefits, the switch to PostgreSQL also relaxes the pressure to minimize the lengths of these names, improving readability.
 
-The second factor contributing to space savings is the reduced use of strings in the data itself.
+
+Two main factors are contributing the smaller storage requirements.
+First, we no longer need to (repeatedly) store the name of each field in each document; this was a MongoDB requirement, as fields in a MongoDB document can vary within each collection.
+For some of the LMFDB's collections, these names accounted for a substantial fraction of the storage requirement.
+In addition to the space benefits, the switch to PostgreSQL also relaxes the pressure to minimize the lengths of these names, improving readability.s, improving readability.
+
+The second factor contributing to space savings is the reduced use of strings to store arbitrary precision integers.
 As a mathematical database, the LMFDB was heavily impacted by MongoDB's lack of support for arbitrary precision integers.
 In order to work around this deficiency, a lot of numerical data was stored as strings.
-In addition to the storage consequences, various workarounds were required in order to sort and search the data correctly.
-The elimination of these hacks have simplified a lot of the supporting code.
-
+In addition to the storage consequences, various workarounds were required to sort and search the data correctly.
+The elimination of these hacks has simplified a lot of the supporting code.
 
 While smaller tables help with query performance, indexes provide a more powerful tool for speeding up searches.
 Indexes facilitate the location of records with constraints on a specified set of columns by storing additional data.
 Having such indexes available is key to provide quick search results for typical queries.
-For example, both MongoDB and PostgreSQL support indexes based on binary trees, which work well for totally ordered data such as integers and strings. \todo{add ref}
+For example, both MongoDB and PostgreSQL support indexes based on binary trees, which work well for totally ordered data such as integers and strings.
 However, there is another query type that is not well supported by binary trees: given a column representing a set of integers, search for rows that contain a particular set, or are contained in a particular set.
-For example, we store the set of ramified primes for number fields, and want to be able to specify specific primes as either ramified or unramified.
-GIN indexes in PostgreSQL support such queries efficiently, while they timed out after 30 seconds when running in MongoDB.
+For example, we store the set of ramified primes $S$ for number fields, and we want to be able to search on number fields by specifying such constraints on $S$.
+Even though we supported such searches through our web interface, many of such searches take more than a couple of minutes to perform within MongoDB, which made our web front end to time out.
+However, in  PostgreSQL, even without relying on any index, these searches become quite reasonable, see Table~\ref{table:ramps}.
+Moreover, we expect to speed up furthermore such queries by taking advantage of GIN indexes in PostgreSQL, which are designed to efficiently handle such searches.
+\begin{table}[h!]
+  \begin{center}
+  \begin{tabular}{l|r|r}
+Constraint & MongoDB & PostgreSQL\\
+\hline
+$\{2, 5\} \subset S$ & 10min 2s & 3.1s\\
+$S \subset \{2, 3, 5\}$ & 3min 26s & 1.6s\\
+$5 \notin S$ & ?? & 12ms
+\end{tabular}
+\caption{Time for searching for number fields by the set of ramified primes.}
+\label{table:ramps}
+\end{center}
+\end{table}
+% One of the issues with the MongoDB implementation is that we were counting the number of results before anything else
 
-
-The transition to PostgreSQL also led to a significant improvement in indexless queries.
-Such queries are important since non-typical queries can be the most interesting mathematically, and since it is impossible to construct all indexes in advance because the LMFDB offers the user a lot of freedom to select search parameters.
-When comparing sequential queries (those without indexes), it's important to specify the memory model used by each database.
-MongoDB offers two different storage engines: Memory Mapping (MMAP), which uses large amounts of memory in order to put as much data as possible into RAM, and WiredTiger, which balances memory usage with filesystem caching.
+%The transition to PostgreSQL also led to a significant improvement in indexless queries.
+The significant improvement in indexless queries is indeed another considerable advantage of the transition to PostgreSQL.
+Such queries are relevant since non-typical queries can be the most interesting mathematically, and since it is impossible to construct all indexes in advance because the LMFDB offers the user a lot of freedom to select search parameters.
+When comparing sequential queries (those without indexes), it is essential to specify the storage engine used by each database.
+While PostgreSQL only offers one storage engine, MongoDB offers two different choices: Memory Mapping (MMAP), which uses large amounts of memory to cache as much data as possible into RAM, and WiredTiger, which balances memory usage with filesystem caching.
 In a system with hundreds of gigabytes of memory, MMAP significantly outperforms WiredTiger.
 However, in a more constrained memory environment, we found that WiredTiger outperforms MMAP on most queries, while also providing data compression at the disk level.
 For these reasons, WiredTiger was the storage engine behind \url{www.LMFDB.org}, and forms the basis for our comparison with PostgreSQL. \todo{Add numerical performance comparisons}
