@@ -426,21 +426,21 @@ First, we centralized many of the scripts used to upload data into a suite of da
 Each section of the LMFDB has a search page, where users can input constraints they would like their curve, field or group to satisfy.
 Some input boxes require an integer or list of integers; others need a label string in a particular format; others a rational number.
 The processing code must process the user provided text, raising appropriate errors on invalid input, and transform the set of inputs into a database query.
-Prior to the database change, we had already begun the process of encapsulating this task.
-Each input box corresponds to a specific field or column in the database, and there is a processing function for each type of input (list of integers, floating point, etc).
+Before the database change, we had already begun the process of encapsulating this task.
+Each input box corresponds to a specific field or column in the database, and there is a processing function for each type of input (list of integers, floating point, etc.).
 As we switched each part of the LMFDB to PostgreSQL, we ensured that it was using these functions.
 
 Once these queries have been constructed, we need to execute the search and pass the results to the Jinja template that actually crafts the webpage seen by the user.
-There are various parts of this task that are shared among all sections of the LMFDB.
+Various parts of this task are shared among all sections of the LMFDB.
 For example, we have to be able to handle errors in user input, errors or timeouts in the execution of the query, and jump boxes that allow a user to go straight to an object with a particular label.
-As part of the switch to PostgreSQL, we created a \emph{search wrapper} that performs all of these jobs in a uniform way, and adopted it across the LMFDB.
+As part of the switch to PostgreSQL, we created a \emph{search wrapper} that uniformly performs all of these jobs, and adopted it across the LMFDB.
 In addition to simplifying the code overall, this change made the user experience more uniform and allowed for the creation of new features, which will be described in the next section.
 
 Many sections of the LMFDB had a statistics page prior to the database change.
 These pages described the number of objects with certain attributes; for example, a table of how many number fields were available by signature, or a table giving the fraction of elliptic curves with a specified torsion structure.
 Along with the database change, we created a class to support the database queries required for these statistics, and a common template to display them nicely.
 This change has the benefit that it automates the process for updating these counts when developers add data.
-It also make it easier to create these statistics pages for more sections of the LMFDB, and makes it easier to implement new features such as user-requested statistics.
+It also makes it easier to create these statistics pages for more sections of the LMFDB, and makes it easier to implement new features such as user-requested statistics.
 
 \subsection{New Features}
 
