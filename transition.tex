@@ -444,33 +444,36 @@ It also makes it easier to create these statistics pages for more sections of th
 
 \subsection{New Features}
 
-In addition to intrinsic benefits of using PostgreSQL, the transition has eased the implementation of a number of new features.
-While many of these would have been possible using MongoDB, the improved abstraction made implementing them much more manageable.
-And some, such as dynamic statistics and verifications, rely on PostgreSQL's improved performance and relational model.
 
+In addition to the intrinsic benefits of using PostgreSQL, the transition has eased the implementation of a number of new features.
+While many of these would have been possible using MongoDB, the improved abstraction made implementing them much more manageable.
+And some, such as dynamic statistics and verifications, rely on PostgreSQL's improved performance and the relational model.
+
+\todo{second time we mention this}
 PostgreSQL supports transactions, allowing one to roll back to a functional earlier state if some later action fails.
 We have built these transactions into our interface layer, and this change has enabled new paradigms when making data changes.
 Rather than having to create a whole new copy of a table when making substantial changes, transactions allow sufficient peace-of-mind that more operations can be performed in-place.
 
-The fact that all interactions with the database pass through our own interface layer allows us to add custom logging.
+The fact that all interactions with the database pass through our interface layer allows us to add custom logging.
 For example, all queries that take longer than a threshold are recorded, allowing us to focus on creating the right indexes.
-We also log high-level actions, such as adding new data to a table or changing a schema, along with a username in order to provide a record of what changes have been made to the data.
+We also log high-level actions, such as adding new data to a table or changing a schema, along with a username to provide a record of what changes have been made to the data.
 These logs help us ensure the quality of our data.
 
 The statistics infrastructure has enabled a new user interface which we refer to as \emph{dynamic statistics}.
 Rather than presenting only a pre-selected set of views, the user can specify which variables they are interested in, as well as constraints on the objects.
-The system the generates a display describing the possible values of those variables and the number of objects possessing each possible set of values.
+The system then generates a display describing the possible values of those variables and the number of objects possessing each possible set of values.
 For example, a user can create a table to view how the weight and level of modular forms vary among forms with complex multiplication.
 We hope that this feature will provide researchers with a new method of interacting with the LMFDB, allowing them to look for large scale patterns in these objects in addition to searching for objects with particular properties.
 
 Many browse pages in the LMFDB already had a link to view a random object.
 Because of the new search wrapper abstraction, it was easy to add the ability to return a random object satisfying a search query.
-This feature saves time when browsing, since it allows you to more quickly reach the homepage of an object satisfying a particular constraint, such as CM elliptic curve or a weight 1 modular form.
+This feature saves time when browsing since it allows you to more quickly reach the homepage of an object satisfying a particular constraint, such as CM elliptic curve or a weight one modular form.
 
-Mathematical data differs from data in most other applications because it has a notion of correctness that can be checked, rather than just providing a record of a real-world measurement.
+Mathematical data differ from data in most other applications because it has a notion of correctness that can be checked, rather than just providing a record of a real-world measurement.
 Some of these verifications are internal, such as checking that the defining polynomial of a number field is irreducible or that the trace of a modular form is zero at each inert prime not dividing the level.
-Others rely on connections with other tables in the database, such as checking that invariants match up between an elliptic curve and its corresponding modular form.
+Others rely on connections with other tables in the database, such as checking that invariants matchup between an elliptic curve and its corresponding modular form.
 The switch to PostgreSQL made it possible to create a framework to write such consistency checks and run them whenever new data is added.
+
 
 \bibliographystyle{plain}
 \bibliography{biblio}
