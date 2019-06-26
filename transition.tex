@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage{amsmath,amssymb}
+\usepackage{amsmath,amssymb,amsrefs}
 \usepackage{url}
 \usepackage{xcolor}
 \usepackage{hyperref}
@@ -12,9 +12,9 @@
 
 %bibtex fix
 % \usepackage[style=numeric]{biblatex}
-\usepackage{eqparbox}
-\usepackage[numbers]{natbib}
-\renewcommand*{\bibnumfmt}[1]{\eqparbox[t]{bblnm}{[#1]}}
+%\usepackage{eqparbox}
+%\usepackage[numbers]{natbib}
+%\renewcommand*{\bibnumfmt}[1]{\eqparbox[t]{bblnm}{[#1]}}
 
 
 \usepackage[color=white, linecolor=red, bordercolor=red]{todonotes}
@@ -35,95 +35,59 @@ Mathematics has a long history of using computations to aid in forming conjectur
 In the past few decades, computers have taken on a central role, both in performing many calculations and in hosting the results.
 As computational and storage capacity has increased, the size of these results has grown to the point where the task of searching and maintaining the data requires specialized knowledge.
 We discuss some of the challenges involved, as well as the main tools available to address them.
-We focus on one particular case study: the effort to migrate the L-functions and modular forms database (LMFDB) from MongoDB to PostgreSQL.
+We focus on one particular case study: the effort to migrate the L-functions and modular forms database (LMFDB) \cite{lmfdb} from MongoDB \cite{mongo} to PostgreSQL \cite{postgres}.
 
 We will be primarily interested in datasets consisting of information on mathematical objects, such as specific number fields, graphs or curves, rather than on mathematical statements.
-There are many valuable resources focusing on theorems and propositions, from general encyclopedias such as Wikipedia and Mathworld to the preprint server arXiv to domain specific references such as Groupprops. \todo{add citations}
+There are many valuable resources focusing on theorems and propositions, from general encyclopedias such as the Encyclopedia of Mathematics \cite{encofmath} and Mathworld \cite{mathworld} to the preprint server arXiv \cite{arxiv} to numerous domain specific references \citelist{\cite{groupprops} \cite{graphclasses} \cite{complexityzoo}}.
 However, the design imperatives for such projects tend to be very different from the type of database we're interested in.
 Since the content of theorem-oriented sites tends to be textual, the standard tools for internet searching such as Google tend to work effectively.
 Moreover, because humans are directly creating the content, the tools for inputting and managing data are different.
+Wiki \citelist{\cite{cantorsattic} \cite{complexityzoo} \cite{groupprops} \cite{knotatlas}} and blog \cite{fanosearch} software is often used to make it easier for many users to be involved in content creation.
 Finally, when algorithms are generating data it is possible to end up with orders of magnitude more content, leading to various challenges of scale not faced by human-created datasets.
 
-\todoinline{We plan to move the next section on mathematical databases here, giving brief summaries both to clarify what kinds of projects we actually are discussing, and as a way to introduce these projects to a reader who may find them interesting.}
+One of the main roles that a mathematical database plays is to record the results of difficult computations.
+Such collections of examples are useful in many areas of mathematics, including group theory \citelist{\cite{groupatlas} \cite{smallgroups} \cite{transgroups}}, Lie theory \citelist{\cite{lieatlas} \cite{umrk}}, graph theory \cite{hog}, knot theory \cite{knotinfo}, integer sequences \cite{oeis}, Euclidean geometry \cite{etc}, algebraic geometry \cite{fanosearch} and number theory \citelist{\cite{primepages} \cite{lmfdb}}.
+In each case, much of the utility of the database is shaped by how the results are displayed to a user, whether as a list of integers with annotations, a picture of a knot or a webpage showing various invariants of the object.
+Some databases are embedded within computer algebra systems such as Sagemath, Magma, or GAP \citelist{\cite{magmadb} \cite{smallgroups} \cite{transgroups}}, which allows a user to easily perform further computations with the objects in the database.
+Others are available online in various formats; we will discuss various methods of data distribution in Section \ref{sec:nutsbolts}.
 
-\todoinline{Explain our intended audience: mathematicians wanting to create databases, anyone who might be considering switching from MongoDB to PostgreSQL, mathematicians interested in large software projects who might be interested in some of the lessons we've learned from the LMFDB.}
+Collecting a large number of examples into one database makes possible a valuable paradigm for experimental mathematics: the ability to search through examples for a few that have particular desired properties.
+We discuss searching within the context of the LMFDB at length in Section \ref{sec:MvsP}.
+In addition to the LMFDB, a number of other mathematical databases also have search functionality as one of their core features \citelist{\cite{umrk} \cite{findstat} \cite{oeis} \cite{isc} \cite{cydata}}.
+Searching requires a more substantial infrastructure than is needed for just displaying data, and one of our aims for this article is to provide advice for mathematicians who might like to create searchable databases.
 
-\todoinline{mention search by content}
+A final role played by many online mathematical databases is to provide domain-specific exposition surrounding the examples that they host \citelist{\cite{primepages} \cite{graphclasses} \cite{complexityzoo} \cite{cantorsattic} \cite{findstat} \cite{knotinfo}}.
+The LMFDB aims to provide enough definitions and background for mathematically literate users to be able to understand the contents.
+The main tool for doing so is a webpage element called a \emph{knowl}, which is a bit of context-free knowledge. 
+Within the lmfdb, knowls are embedded inside webpages or other knowls, and expand to provide more information when clicked.
+Such exposition is an important part of the presentation of a database, but is peripheral to our main topic of the functioning of the underlying database.
+
+Another important aspect of a database project that falls beyond the scope of this article is the social and financial efforts required to sustain a collaboration.
+There are numerous examples of projects that are no longer accessible because the authors have moved on or passed away.
+Projects also have various ways of reaching out to potential developers, ranging from academic workshops and conferences, to the standard open source tools such as Github \cite{github}, to solicitations for data \citelist{\cite{findstat} \cite{hog} \cite{oeis}}.
+In this article, we limit our attention to the technical side of the job: from setting up hosting servers to the different options for database software to details on how the LMFDB functions.
+
+We hope that this article will be useful to mathematicians hoping to create their own databases; to database engineers who are considering switching from MongoDB to PostgreSQL; and to mathematicians participating in large software projects for whom some of the LMFDB's lessons might prove useful.
 
 \section{The LMFDB project}
 The Langlands program, first formulated by Robert Langlands in the 1960s, is a set of widespread conjectures aimed at understanding and explaining the interconnections between a dizzying array of subfields of mathematics, including number theory, representation theory, algebraic geometry, and harmonic analysis---and in the 21st century its reach continues to expand.
-The Langlands program has been called ``one of the biggest ideas to come out of mathematics in the last fifty years'' and ``the Grand Unified Theory of mathematics'' \cite[p. 3]{frenkel}.
-
+The Langlands program has been called ``one of the biggest ideas to come out of mathematics in the last fifty years'' and ``the Grand Unified Theory of mathematics'' \cite{frenkel}*{p. 3}.
 
 To provide compelling visual and computational displays of the Langlands program ``in action'', a database was created called the \emph{$L$-functions and Modular Forms Database (LMFDB)}, available at the website \url{http://www.lmfdb.org/}.
-The LMFDB was first conceived in 2007~\cite{cremona-16} and remains the object of a significant amount of ongoing work by over one hundred mathematicians \cite[\S Acknowledgments]{lmfdb}.
-
+The LMFDB was first conceived in 2007~\cite{cremona-16} and remains the object of a significant amount of ongoing work by over one hundred mathematicians~\cite{lmfdb}*{Acknowledgments}.
 
 The LMFDB hosts a variety of databases and connects them through the Langlands program.
 
 
-\section{Other mathematical databases}
+\section{Nuts and bolts} \label{sec:nutsbolts}
 
-\todoinline{What about if we instead of listing all these databases we just use them as examples? for certain things? Or did we have some other goal in mind?}
+When it comes to hosting a mathematical database, there is a wide range of options available.
+Until the last several decades, the only option available was to use a print format, for example in a book or an article, and rely on a publisher to distribute its content and to make it available to the rest of scientific community.
+Since the publisher takes care of most of the technical issues, this method offers the benefit of simplicity to the author, but distribution in print provides a number of disadvantages compared to digital distribution via the internet.
+For instance, the act of publishing through print is a lengthy process, and the data is less immediately accessible than online distribution, putting barriers in the way of the database user.
+Furthermore, once the data is published is extremely difficult to address  mistakes, add new data or features.
 
-\subsection{The On-Line Encyclopedia of Integer Sequences}
-The The On-Line Encyclopedia of Integer Sequences (OEIS) \url{oeis.org} is an online database of integer sequences, containing over 300,000 sequences and steadily growing.
-It records information on integer sequences of interest from a professional mathematicians to general public.
-.
-Each entry contains the leading terms of the sequence, keywords, mathematical motivations, literature links, and more.
-The database is searchable by keyword or by subsequence.
-For example, one can search for \href{https://oeis.org/search?q=1,2,0,2,0,5,6,9,0,3,1,5,9,5}{\texttt{1,2,0,2,0,5,6,9,0,3,1,5,9,5}}
-to find the sequence \texttt{A002117}, the Decimal expansion of $\zeta(3)$, where $\zeta$ is the Riemann-zeta function.
-
-\subsection{Inverse Symbolic Calculator}
-The Inverse Symbolic Calculator (ISC) \url{http://wayback.cecm.sfu.ca/projects/ISC/} is an online database and a set of programs dedicated to the identification of truncated decimal expansion as a closed form representation.
-
-Similarly to OEIS one can also search on \href{http://wayback.cecm.sfu.ca/cgi-bin/isc/lookup?number=1.2020569031595942&lookup_type=simple}{\texttt{1.2020569031595942}}, to find that such decimal expansion seems to be $\zeta(3)$ or
-searching on
-\href{http://wayback.cecm.sfu.ca/cgi-bin/isc/lookup?number=22.8415439646377&lookup_type=simple}{\texttt{22.841543964637705}} and finding that it is an approximation to $\zeta(3)^{17}$.
-
-
-\subsection{Encyclopedia of Triangle Centers}
-
-The Encyclopedia of Triangle Centers (ETC) \url{http://faculty.evansville.edu/ck6/encyclopedia/ETC.html} is an online database of triangle centers, this is a point in the plane that is in some sense a center of a triangle akin to the centers other plane figures.
-The ETC extends the list of 400 triangle centers originally published in~\cite{kimberling-98} and now covers 32000 triangle centers.
-
-\todo{I'm not sure what else to say about this one, and this one is quite "simple"}
-
-
-\begin{itemize}
-\item Information System on Graph Classes and their Inclusions (\url{graphclasses.org/})
-\item Complexity Zoo (\url{https://complexityzoo.uwaterloo.ca/Complexity_Zoo}) - discussion of source of data: computers or humans
-\item Digital Library of Mathematical Functions (\url{https://dlmf.nist.gov/})
-\item Consequences of the Axiom of Choice (\url{http://www.math.purdue.edu/~hrubin/JeanRubin/Papers/conseq.html})
-\item Cantor's Attice (\url{cantorsattic.info})
-\item Unipotent Muffin Research Kitchen (\url{http://lie.math.okstate.edu/UMRK/UMRK.html})
-\item Atlas of Lie Groups and Representations (\url{http://www.liegroups.org/})
-\item Atlas of Finite Group Representations (\url{http://brauer.maths.qmul.ac.uk/Atlas/v3/})
-\item FindStat (\url{http://www.findstat.org/})
-\item Matroids (\url{https://www.math.ucdavis.edu/~mkoeppe/art/Matroids/})
-\item GraphArichive (\url{http://www.graph-archive.org/doku.php}) - example that died
-\item House of Graphs (\url{https://hog.grinvin.org/})
-\item Table of Knot Invariants (\url{http://www.indiana.edu/~knotinfo/})
-\item Knot Atlas (\url{http://katlas.org/})
-\item Databases included in GAP/Sage/Magma/etc
-\item Predecessors to the LMFDB (Cremona's tables, \url{https://math.la.asu.edu/~jj/localfields/} and other Jones' databases, \url{https://wstein.org/Tables/})
-\item Calabi-Yau data \url{http://hep.itp.tuwien.ac.at/~kreuzer/CY/}
-\item The K3 Database \url{https://magma.maths.usyd.edu.au/magma/handbook/text/1410}
-\item Fano Varieties and Extremal Laurent Polynomials \url{http://coates.ma.ic.ac.uk/fanosearch/}
-\item Prime pages \url{https://primes.utm.edu/}
-\end{itemize}
-
-See question of Tim Gowers (https://mathoverflow.net/questions/68442/what-could-be-some-potentially-useful-mathematical-databases) about what databases might be desirable to have.
-
-\section{Nuts and bolts}
-
-When it comes to hosting a mathematical database there are a wide range of options available.
-Until the last several decades, the only option available was to use a print format, for example in a book or an article, and rely on a publisher to distribute its content and to make it available to the rest of mathematical community.
-Since the publisher takes care of most of the technical issues, this method offers the benefit of simplicity to the author, but distribution in print offers a number of disadvantages compared to digital distribution via the internet.
-First, any mistakes are difficult to fix, and adding new features or data is a long process.  \todo{mention hard to fix errors}
-Second, print distribution is less immediately accessible than online distribution, putting barriers in the way of the database user.
-But since the digital distribution of mathematical data is not taken on by publishers, authors have many more choices to make.
+On the other hand, given that the digital distribution of mathematical data is not taken on by publishers, authors have many more choices to make.
 We break down these choices into the following related categories:
 \begin{itemize}
   \item back end --- How to encode and manipulate the database in a machine readable format.
@@ -139,50 +103,100 @@ We organize the options for how to encode the database in a machine readable for
 \begin{itemize}
   \item human readable files
     ---
-     Storing the data set in a human readable format, like a  plain text file or a comma-separated values file, is one of the simplest possible solutions.
+     Storing the data set in a human readable format, like a  plain text file or a comma-separated values file, is one of the most straightforward possible solutions.
     Furthermore, it also does not require special software to access the data, very similar to a table in print.
     However, it can be cumbersome and impractical to search or manipulate the data without additional tools.
-    \todo{add examples}
   \item application dependent files
     ---
-    A more complicated solution is to store the dataset in an application dependent format.
-    In many cases such a choice enables direct manipulation of the desired objects.
+    A more advanced solution is to store the dataset in an application dependent format.
+    For example, the Small Groups Library available in the GAP computer algebra system. \todo{addref}
+    In many cases, such a choice enables direct manipulation of the desired objects.
     For example, using SageMath pickles makes it easy to load the data into an active SageMath session.
     However, the dataset will not likely be efficiently searchable, and most content searches would need to loop over every item in the dataset in a sequential search.
-    \todo{mention The GAP Small Groups Library}
   \item database structure
     ---
-    Finally, one may store the dataset in database format, i.e. in a format optimized for searching.
-    There are many types of database available; in this article we fill focus on two:
+    Finally, one may store the dataset in database format, i.e., in a format optimized for searching.
+    However, such sophisticated solution will most likely require additional software for users to to manipulate the data.
+    There are many types of database available; in this article, we fill focus on two:
     \begin{itemize}
       \item relational database --- a collection of ledger-style tables with a fixed schema, where the structure in each row of is constant.
-        These kind of databases have dominated the industry for decades \todo{who am I to say this?} and some of their famous instantiations are Oracle, MySQL, PostgreSQL, and SQLite.
+        This kind of databases have been prevalent for decades and some of their famous instantiations are Oracle, MySQL, PostgreSQL, and SQLite.
       \item document oriented database --- a schema free database, where each object is stored in a single instance in the database, and every stored object can be different from every other.
-        The most popular example is MongoDB.
+        MongoDB is one of the most famous instantiations of such paradigm.
     \end{itemize}
-    In Section \ref{sec:MvsP} we will contrast PostgreSQL and MongoDB.
-    \todo{mention additional software might be required for users to to manipulate the data?}
+    In Section~\ref{sec:MvsP} we will contrast PostgreSQL and MongoDB.
 \end{itemize}
 
 
 \subsection{Front End}
 
+We now go through some of the options for how the user can interact with a database.
 \begin{itemize}
-\item E-mail me if you want the data
-\item HTML front page with downloads (static)
-\item Wiki page (dynamic but human generated)
-\item within computer algebra system (GAP/Sage/Magma)
-\item web application (LMFDB uses Python/Flask/Jinja with javascript/CSS/etc).  Allows for dynamic generation of pages, links, nicer representation of data
+  \item direct access
+    ---
+    The author may decide to provide direct access to the database.
+    For example, the author may make the database files available through E-mail or a web page; or
+    allow direct read access to a database server.
+
+  \item computer algebra system
+    ---
+    If the database is provided in a computer algebra system dependent files, these might evolve into being part of algebra system itself.
+    For example, Small Groups Library available in GAP or the K3 Database in Magma. \todo{addref}
+    This option is extremely convenient for the user, however, this is not suitable for very large databases, as these would increase the size of the computer algebra system in question.
+
+  \item website
+    ---
+    The user may also interact with the database through a collection of web pages displaying the data.
+    These web pages can range widely in complexity.
+    For example, one can manually curate each page individually
+    These pages can be humanly curate each object page, as in
+    \begin{itemize}
+      \item Cantor’s Attice \url{http://cantorsattic.info/}
+      \item Fano Varieties and Extremeal Laurent Polynomials \url{http://coates.ma.ic.ac.uk/fanosearch/}
+    \end{itemize}
+    or, automatically generate them as static web pages, as in
+    \begin{itemize}
+      \item Encyclopedia of Triangle Centers \url{https://faculty.evansville.edu/ck6/encyclopedia/ETC.html}
+      \item Graph Classes \url{http://graphclasses.org/index.html}
+      \item SyzygyData \url{http://syzygydata.com/}
+      \item Table of Knot Invariants \url{http://www.indiana.edu/~knotinfo/}
+    \end{itemize}
+    Alternatively, one can instead use an web application to generate each page whet tis accessed.
+    This is essential for large datasets, as generating and storing a static web page for each object, might be unfeasible.
+    LMFDB follows such approach, where all the content is generated on the fly through a dedicated web application based of Flask \todo{addref \url{http://flask.pocoo.org/}}, and only some small amount of the content is humanly curated, definitions and others.
+    Other examples of mathematical databases using such approach contain:
+    \begin{itemize}
+      \item Knot Atlas \url{http://katlas.org}
+      \item House of Graphs (\url{https://hog.grinvin.org/})
+    \end{itemize}
 \end{itemize}
 
 \subsection{Hosting}
 
+
+For last we discuss some of the options regarding where to physically store the database.
+
 \begin{itemize}
-  \item personal hard-drive --- no initial set up cost, but the  
-  \item personal webpage --- On a personal webpage (easy for many academics), but limits scope (aren't running your own webserver)
-  \item Using a web framework (e.g. Github, Cocalc, Wordpress/wikidot/blogs)
-  \item On a university/personal server.  Complete control, but have to deal with down time, buying new servers, backups, security updates, DNS....
-  \item Servers in the cloud (e.g. Google, AWS).  Reduces hassle, but costs money.
+  \item personal hard-drive
+    ---
+    This is one of the simples options, as it has no initial set up cost,
+    however, it severely limits the accessibility of the database to others
+  \item personal web page
+    ---
+    If one already maintains a personal web page, a convenient option is to also use it to host their database.
+    However, the scope might be limited, as one does not has full access to the hosting servers.
+  \item web framework
+    ---
+    Another convenient option is to use a web framework service (e.g. Github, Cocalc, Wordpress/wikidot/blogs).
+    These options offer a lower initial set up cost with a minimal long term maintenance cost, however, the scope is also limited by the framework.
+  \item On a university/personal server
+    ---
+    This solution provides complete control.
+    However, not only, there is a high initial monetary/effort cost of buying the servers and setting them up, one also needs to upkeep the servers for the rest of their life.
+    Furthermore, the scope might be limited by some of the initial hardware choices.
+  \item using a hosting service
+    ---
+    Servers in the cloud (e.g. Google, AWS) provides complete control, this has an monetary associated maintenance costs, however, one does not need to worry about mainentance tasks, uptime, and etc.
 \end{itemize}
 
 
@@ -195,10 +209,10 @@ We organize the options for how to encode the database in a machine readable for
 
 In 2009, when MongoDB was initially released as an open source project in it presented itself as an exciting new option to consistently store mathematical objects.
 As a document-oriented database, where each document is stored independently in a JSON-like schemata, it did not require a schema, a boon when creating new collections of mathematical objects where the data requirements only gradually became clear.
-Moreover, Python bindings were available, a language that many computational number theorists were familiar with due to its use in SageMath.
-It worked well for many years, but as the LMFDB grew various shortcomings of using a non relational database became more problematic.
+Moreover, Python bindings were available, a language that many computational number theorists are familiar with due to its use in SageMath.
+This setup worked well for many years; however, as the LMFDB grew various shortcomings of using a non relational database became more evident.
 Over the last year, we have transitioned from MongoDB to PostgreSQL, a popular open source implementation of the SQL language that grew out of earlier projects founded in the 1970s and 80s.
-As an relational database, PostgreSQL stores data in structure way in tables with a specified schema: each row must have the same layout, with the types of columns constant across all rows.
+As a relational database, PostgreSQL stores data in a structured way, where the data is organized in tables, and each table has a specified schema, i.e., each row must have the same layout, with the types of columns constant across all rows.
 
 \subsection{Comparing two database systems}
 
@@ -207,7 +221,7 @@ MongoDB, as a document-oriented database, is meant to facilitate the storage of 
 This flexibility is extremely convenient, but can also easily lead to errors and unnecessary overhead for a structured database.
 For example, field names were kept short in MongoDB to save on space usage and multiple typos in the field names were found during the transition to PostgreSQL.
 Furthermore, differing layouts across documents requires more complicated processing code.
-In contrast, PostgreSQL is a relational database, where fixed schemas enable queries across multiple tables.  
+In contrast, PostgreSQL is a relational database, where fixed schemas enable queries across multiple tables.
 Since the LMFDB was already a uniform set of fields in MongoDB (to the extent that an inventory application was written to extract a schema from the data), creating a formal schema was fairly straightforward.
 Database-level schema support significantly improves robustness and performance, and PostgreSQL's JSONB type allows for schemaless columns when desired.
 One benefit of switching has been that storing the data in PostgreSQL requires substantially less space than in MongoDB.
