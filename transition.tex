@@ -449,8 +449,8 @@ In addition to the intrinsic benefits of using PostgreSQL, the transition has ea
 While many of these would have been possible using MongoDB, the improved abstraction made implementing them much more manageable.
 And some, such as dynamic statistics and verifications, rely on PostgreSQL's improved performance and the relational model.
 
-\todo{second time we mention this}
 PostgreSQL supports transactions, allowing one to roll back to a functional earlier state if some later action fails.
+\todo{second time we mention this}
 We have built these transactions into our interface layer, and this change has enabled new paradigms when making data changes.
 Rather than having to create a whole new copy of a table when making substantial changes, transactions allow sufficient peace-of-mind that more operations can be performed in-place.
 
