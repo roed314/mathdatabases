@@ -226,41 +226,40 @@ This flexibility is extremely convenient, but can also easily lead to errors and
 For example, field names were kept short in MongoDB to save on space usage and multiple typos in the field names were found during the transition to PostgreSQL.
 Furthermore, differing layouts across documents requires more complicated processing code.
 In contrast, PostgreSQL is a relational database, where fixed schemas enable queries across multiple tables.
-For example, one can search and access data in relation to other data in the database.
-Since the LMFDB was already a uniform set of fields in MongoDB (to the extent that an inventory application was written to extract a schema from the data), creating a formal schema was fairly straightforward.
-Database-level schema support significantly improves robustness and performance, and PostgreSQL's JSONB type allows for schemaless columns when desired.
+For example, one can search and access data in relation to other data in the database. \todo{This seems redundant and awkwardly phrased}
+Since the LMFDB was already a uniform set of fields in MongoDB (so much so that an inventory application was written to extract a schema from the data), creating a formal schema was fairly straightforward.
+Database-level schema support improves robustness and performance, and PostgreSQL's JSONB type allows for schemaless columns when desired.
 
 
 One benefit of switching has been that storing the data in PostgreSQL requires substantially less space than in MongoDB.
 For example, when converting our biggest MongoDB collection \texttt{Lfunctions.Lfunctions} to the PostgreSQL table \texttt{lfunc\_lfunctions}, we observed a space savings of about 42\%, going from 194GiB to 113GiB.
-These savings translate both to monetary savings (we were spending about \$2000 per year in MongoDB paying for storage space) and to query speed if a sequential search is required.
+These savings translate both to monetary savings (we were spending a total of about \$2000 per year paying for storage space using MongoDB) and to query speed when a sequential search is required.
 
 
 
-Two main factors are contributing the smaller storage requirements.
-First, we no longer need to (repeatedly) store the name of each field in each document; this was a MongoDB requirement, as fields in a MongoDB document can vary within each collection.
+Two main factors contribute to the smaller storage requirements.
+First, we no longer need to (repeatedly) store the name of each field in every document; this was a MongoDB requirement, as fields in a document can vary across a collection.
 For some of the LMFDB's collections, these names accounted for a substantial fraction of the storage requirement.
-In addition to the space benefits, the switch to PostgreSQL also relaxes the pressure to minimize the lengths of these names, improving readability.s, improving readability.
+In addition to the space benefits, the switch to PostgreSQL also relaxes the pressure to minimize the lengths of these names, improving readability.
 
-The second factor contributing to space savings is the reduced use of strings to store arbitrary precision integers.
-As a mathematical database, the LMFDB was heavily impacted by MongoDB's lack of support for arbitrary precision integers.
-In order to work around this deficiency, a lot of numerical data was stored as strings.
+The second factor contributing to space savings is PostgreSQL's support for arbitrary precision integers.
+As a mathematical database, the LMFDB frequently used large integers which had to be stored as strings in MongoDB.
 In addition to the storage consequences, various workarounds were required to sort and search the data correctly.
 The elimination of these hacks has simplified a lot of the supporting code.
 
 While smaller tables help with query performance, indexes provide a more powerful tool for speeding up searches.
 Indexes facilitate the location of records with constraints on a specified set of columns by storing additional data.
-Having such indexes available is key to provide quick search results for typical queries.
+Having such indexes available is key to providing quick search results for typical queries.
 For example, both MongoDB and PostgreSQL support indexes based on binary trees, which work well for totally ordered data such as integers and strings.
 However, there is another query type that is not well supported by binary trees: given a column representing a set of integers, search for rows that contain a particular set, or are contained in a particular set.
 For example, we store the set of ramified primes $R_K$ for number fields $K$, and we want to be able to search on number fields by specifying such constraints on $R_K$.
-Even though we supported such searches through our web interface, many of such searches take more than a couple of minutes to perform within MongoDB, which made our web front end to time out.
-However, in  PostgreSQL, even without relying on any index, these searches become quite reasonable, see Table~\ref{table:ramps}.
-Moreover, we expect to speed up furthermore such queries by taking advantage of GIN indexes in PostgreSQL, which are designed to efficiently handle such searches.
+Even though we supported such searches through our web interface, many such searches take more than a couple of minutes to perform within MongoDB, which caused our web front-end time out.
+However, in  PostgreSQL, even without relying on any index, these searches become quite reasonable: see Table~\ref{table:ramps}.
+Moreover, we expect to further speed up such queries by taking advantage of GIN indexes in PostgreSQL, which are designed to efficiently handle such searches.
 \begin{table}[h!]
   \begin{center}
   \begin{tabular}{l|r|r}
-Query & MongoDB & PostgreSQL\\
+Query & MongoDB\footnote{We used WiredTiger for comparisons since it outperforms MMAP when using normal amounts of RAM} & PostgreSQL\\
 \hline
 $\#\{K : \{2, 5\} \subset R_K\}$ & 10min 2s & 6.9s\\
 $\#\{K: R_K \subset \{2, 3, 5\} \}$ & 14min 34s & 3.42s\\
@@ -270,18 +269,14 @@ $\#\{K : 5 \notin R_K \}$ & 6h 9min & 2.93s
 \label{table:ramps}
 \end{center}
 \end{table}
+\todoinline{Add 2, 3, 73 to the table, since this uses an index; add column for whether an index is used}
+\todoinline{Footnote 1 is missing}
 
 % One of the issues with the MongoDB implementation is that we were counting the number of results before anything else
 
 %The transition to PostgreSQL also led to a significant improvement in indexless queries.
 The significant improvement in indexless queries is indeed another considerable advantage of the transition to PostgreSQL.
 Such queries are relevant since non-typical queries can be the most interesting mathematically, and since it is impossible to construct all indexes in advance because the LMFDB offers the user a lot of freedom to select search parameters.
-\todo{remove the end of paragrah?}
-When comparing sequential queries (those without indexes), it is essential to specify the storage engine used by each database.
-While PostgreSQL only offers one storage engine, MongoDB offers two different choices: Memory Mapping (MMAP), which uses large amounts of memory to cache as much data as possible into RAM, and WiredTiger, which balances memory usage with filesystem caching.
-In a system with hundreds of gigabytes of memory, MMAP significantly outperforms WiredTiger.
-However, in a more constrained memory environment, we found that WiredTiger outperforms MMAP on most queries, while also providing data compression at the disk level.
-For these reasons, WiredTiger was the storage engine behind \url{www.LMFDB.org}, and forms the basis for our comparison with PostgreSQL in Tables~\ref{table:ramps} and \ref{table:indexless}.
 
 \begin{table}[h!]
   \begin{center}
@@ -447,8 +442,9 @@ Some of these verifications are internal, such as checking that the defining pol
 Others rely on connections with other tables in the database, such as checking that invariants matchup between an elliptic curve and its corresponding modular form.
 The switch to PostgreSQL made it possible to create a framework to write such consistency checks and run them whenever new data is added.
 
+\todoinline{Discuss the fact that we can now return a list of results without returning the total count: this had major speed consequences}
 
-\bibliographystyle{plain}
+%\bibliographystyle{plain}
 \bibliography{biblio}
 
 \end{document}
