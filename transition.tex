@@ -22,6 +22,8 @@
 % usage \todo and \todoinline
 \newcommand{\todoinline}[1]{\todo[inline]{#1}}
 
+\newcommand{\subhead}[1]{\vspace{0.1in} \noindent \textbf{#1.}\ \ }
+
 \title{Maintaining Mathematical Databases}
 \author{Edgar Costa and David Roe}
 
@@ -61,9 +63,8 @@ which allows a user to perform further computations with the objects in the data
 Others are available online in various formats; we will discuss different methods of data distribution in Section~\ref{sec:nutsbolts}.
 
 Collecting a large number of examples into one database makes possible a valuable paradigm for experimental mathematics: the ability to search through examples for a few that have particular desired properties.
-We discuss searching within the context of the LMFDB at length in Section \ref{sec:MvsP}.
 In addition to the LMFDB, a number of other mathematical databases also have search functionality as one of their core features \citelist{\cite{umrk} \cite{findstat} \cite{oeis} \cite{isc} \cite{cydata}}.
-Searching requires a more substantial infrastructure than is needed for just displaying data, and one of our aims for this article is to provide advice \todo{better wording} for mathematicians who might like to create searchable databases.
+Searching requires a more substantial infrastructure than is needed for just displaying data; the discussion in Section \ref{sec:MvsP} highlights some of the factors to consider when choosing a search engine.
 
 A final role played by many online mathematical databases is to provide domain-specific exposition surrounding the examples that they host \citelist{\cite{primepages} \cite{graphclasses} \cite{complexityzoo} \cite{cantorsattic} \cite{findstat} \cite{knotinfo}}.
 The LMFDB aims to provide enough definitions and background for mathematically literate users to be able to understand the contents.
@@ -73,7 +74,7 @@ Such exposition is an important part of the presentation of a database, but is p
 
 Another important aspect of a database project that falls beyond the scope of this article is the social and financial efforts required to sustain a collaboration.
 There are numerous examples of projects that are no longer accessible because the authors have moved on or passed away.
-Projects also have various ways of reaching out to potential developers, ranging from academic workshops and conferences, to the standard open source tools such as GitHub~\cite{github}, to solicitations\todo{Edgar: solicitation sounds weird} for data \citelist{\cite{findstat} \cite{hog} \cite{oeis}}.
+Projects also have various ways of reaching out to potential developers, ranging from academic workshops and conferences, to the standard open source tools such as Github~\cite{github}, to forms allowing users to easily submit data \citelist{\cite{findstat} \cite{hog} \cite{oeis}}.
 In this article, we limit our attention to the technical side of the job: from setting up hosting servers to the different options for database software to details on how the LMFDB functions.
 
 \subsection{The LMFDB project}
@@ -83,7 +84,7 @@ The Langlands program has been called ``one of the biggest ideas to come out of 
 To provide compelling visual and computational displays of the Langlands program ``in action'', a database was created called the \emph{$L$-functions and Modular Forms Database (LMFDB)}, available at the website \url{http://www.lmfdb.org/}.
 The LMFDB was first conceived in 2007~\cite{cremona-16} and remains the object of a significant amount of ongoing work by over one hundred mathematicians~\cite{lmfdb}*{Acknowledgments}.
 
-The LMFDB hosts a variety of databases and connects them through the Langlands program, we recommend~\cite{cremona-16} to learn more about it.\todo{maybe also mention just simple browsing}
+The LMFDB hosts a variety of databases and connects them through the Langlands program; we recommend online experimentation or~\cite{cremona-16} for more details.
 
 
 \section{Nuts and bolts}
@@ -108,21 +109,20 @@ We will overview some of the possible options in each of these categories
 
 We organize the options for how to encode the database in a machine readable format in terms of how easy it is to search for content.
 
-\begin{itemize}
-  \item human readable files
-    ---
+
+\subhead{Human readable files}
      Storing the data set in a human readable format, like a  plain text file or a comma-separated values file, is one of the most straightforward possible solutions.
     Furthermore, it also does not require special software to access the data, very similar to a table in print.
     However, it can be cumbersome and impractical to search or manipulate the data without additional tools.
-  \item application dependent files
-    ---
+
+\subhead{Application dependent files}
     A more advanced solution is to store the dataset in an application dependent format.
     For example, the Small Groups Library \cite{smallgroups} available in the GAP computer algebra system \cite{gap}.
     In many cases, such a choice enables direct manipulation of the desired objects.
     For example, using SageMath pickles makes it easy to load the data into an active SageMath session.
     However, the dataset will not likely be efficiently searchable, and most content searches would need to loop over every item in the dataset in a sequential search.
-  \item database structure
-    ---
+
+\subhead{Database structure}
     Finally, one may store the dataset in database format, i.e., in a format optimized for searching.
     However, such sophisticated solution will most likely require additional software for users to to manipulate the data.
     There are many types of database available; in this article, we fill focus on two:
@@ -133,63 +133,54 @@ We organize the options for how to encode the database in a machine readable for
         MongoDB \cite{mongo} is one of the most famous instantiations of such paradigm.
     \end{itemize}
     In Section~\ref{sec:MvsP} we will contrast PostgreSQL and MongoDB.
-\end{itemize}
 
 
 \subsection{Front End}
 
 We now go through some of the options for how the user can interact with a database.
-\begin{itemize}
-  \item direct access
-    ---
+
+\subhead{Direct access}
     The author may decide to provide direct access to the database.
     For example, the author may make the database files available through E-mail or a web page; or
     allow direct read access to a database server.
 
-  \item computer algebra system
-    ---
+\subhead{Computer algebra system}
     If the database is provided in a computer algebra system dependent files, these might evolve into being part of algebra system itself.
     For example, Small Groups Library \cite{smallgroups} available in GAP or the K3 Database in Magma \cite{magmadb}.
     This option is extremely convenient for the user, however, this is not suitable for very large databases, as these would increase the size of the computer algebra system in question.
 
-  \item website
-    ---
+\subhead{Website}
     The user may also interact with the database through a collection of web pages displaying the data.
     These web pages can range widely in complexity.
-    For example, one can manually curate each page individually
-    These pages can be humanly curate each object page \citelist{\cite{cantorsattic}, \cite{fanosearch}} or, automatically generate them as static web pages \citelist{\cite{etc}, \cite{graphclasses}, \cite{SyzygyData}, \cite{knotinfo}}.
-    Alternatively, one can instead use an web application to generate each page when it is accessed.
-    This is essential for large datasets, as generating and storing a static web page for each object, might be unfeasible.
-    LMFDB follows such approach, where all the content is generated on the fly through a dedicated web application based of Flask~\cite{flask}, and only a small amount of the content is human-curated.
-    Other examples of mathematical databases using such approach contain \citelist{\cite{knotatlas}, \cite{hog}}.
-\end{itemize}
+    For example, one can manually curate each page individually \cites{cantorsattic, fanosearch} or automatically generate them as static web pages \cites{etc, graphclasses, SyzygyData, knotinfo}.
+    Alternatively, one can instead use a web application to generate each page when it is accessed.
+    This is essential for large datasets, as generating and storing a static web page for each object can be infeasible.
+    LMFDB follows such an approach, where all the content is generated on the fly through a dedicated web application based on Flask~\cite{flask}, and only a small amount of the content is human-curated.
+    Other examples of mathematical databases using such an approach include \cites{knotatlas, hog}.
 
 \subsection{Hosting}
 
 Finally, we discuss some of the options regarding where to physically store the database.
 
-\begin{itemize}
-  \item personal hard-drive
-    ---
+\subhead{Personal hard-drive}
     This is one of the simplest options, as it has no initial set up cost.
     However, it severely limits the accessibility of the database to others.
-  \item personal web page
-    ---
+
+\subhead{Personal web page}
     If one already maintains a personal web page, a convenient option is to also use it to host their database.
     However, the scope might be limited, as one may not have full access to the hosting servers.
-  \item web framework
-    ---
+
+\subhead{Web framework}
     Another convenient option is to use a web framework service (e.g. Github, Cocalc, Wordpress/wikidot/blogs).
     These options offer a lower initial set up cost with a minimal long term maintenance cost, however, the scope is also limited by the framework.
-  \item On a university/personal server
-    ---
+
+\subhead{On a university/personal server}
     This solution provides complete control.
     However, there is both a high initial cost in buying the servers and setting them up.  Moreover, one also needs to maintain the server for the duration of its life: such tasks include installing security updates, dealing with service interruptions and managing backups.
     In addition, the database's scope might be limited by the capabilities of the initial hardware choices.
-  \item using a hosting service
-    ---
+
+\subhead{Using a hosting service}
     Servers in the cloud (e.g. Google, AWS) provide complete control and have no monetary startup costs, but require ongoing payments proportional to the resources used.  The main benefit is that one does not need to worry about maintaining the servers themselves.  This option is currently used by the LMFDB.
-\end{itemize}
 
 
 \section{MongoDB vs PostgreSQL}
