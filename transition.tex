@@ -253,12 +253,11 @@ $\#\{K: R_K \subset \{2, 3, 73\} \}$ & 0.1\% & 8min 11s & 170ms
 \label{table:ramps}
 \end{center}
 \end{table}
-\todoinline{mention that both queries in Table 2 become instantaneous on the second run}
-\todoinline{cite Table 2}
 
 
 The significant improvement in indexless queries is indeed another considerable advantage of the transition to PostgreSQL.
 Such queries are relevant since non-typical queries can be the most interesting mathematically, and since it is impossible to construct all indexes in advance because the LMFDB offers the user a lot of freedom to select search parameters.
+We present two such examples in Table~\ref{table:indexless}, where the number of results is about 1000 in each case, we also note that both queries are instantaneous on a second run, as both databases do a good job of caching recent queries.
 
 \begin{table}[h!]
   \begin{center}
@@ -268,7 +267,7 @@ Query & MongoDB & PostgreSQL\\
 $\{K : 5 \notin R_K, |\operatorname{disc}_K| \leq 2000\}$ & 1.95s & 0.1s\\
 $\{E : \# \Sha = 4, \rank E = 1, \# E_{\text{torsion}} = 1\}$ & 1min 58s & 1.95s\\
 \end{tabular}
-\caption{Times for fetching the rows/objects satisfying the given constraint.}
+\caption{Times for fetching the objects/rows satisfying the given constraint.}
 \label{table:indexless}
 \end{center}
 \end{table}
