@@ -8,6 +8,10 @@
 \usepackage{enumitem}
 \usepackage{colonequals}
 
+\usepackage{footnote}
+\makesavenoteenv{tabular}
+\makesavenoteenv{table}
+
 
 \usepackage[OT2,T1]{fontenc}
 \DeclareSymbolFont{cyrletters}{OT2}{wncyr}{m}{n}
@@ -149,26 +153,11 @@ We now go through some of the options for how the user can interact with a datab
     The user may also interact with the database through a collection of web pages displaying the data.
     These web pages can range widely in complexity.
     For example, one can manually curate each page individually
-    These pages can be humanly curate each object page, as in
-    \begin{itemize}
-      \item Cantor’s Attice \url{http://cantorsattic.info/}
-      \item Fano Varieties and Extremeal Laurent Polynomials \url{http://coates.ma.ic.ac.uk/fanosearch/}
-    \end{itemize}
-    or, automatically generate them as static web pages, as in
-    \begin{itemize}
-      \item Encyclopedia of Triangle Centers \url{https://faculty.evansville.edu/ck6/encyclopedia/ETC.html}
-      \item Graph Classes \url{http://graphclasses.org/index.html}
-      \item SyzygyData \url{http://syzygydata.com/}
-      \item Table of Knot Invariants \url{http://www.indiana.edu/~knotinfo/}
-    \end{itemize}
-    Alternatively, one can instead use an web application to generate each page whet tis accessed.
+    These pages can be humanly curate each object page \cites{cantorsattic, fanosearch} or, automatically generate them as static web pages \cites{etc, graphclasses, SyzygyData, knotinfo}.
+    Alternatively, one can instead use an web application to generate each page when it is accessed.
     This is essential for large datasets, as generating and storing a static web page for each object, might be unfeasible.
-    LMFDB follows such approach, where all the content is generated on the fly through a dedicated web application based of Flask \cite{flask}, and only a small amount of the content is human-curated.
-    Other examples of mathematical databases using such approach contain:
-    \begin{itemize}
-      \item Knot Atlas \url{http://katlas.org}
-      \item House of Graphs (\url{https://hog.grinvin.org/})
-    \end{itemize}
+    LMFDB follows such approach, where all the content is generated on the fly through a dedicated web application based of Flask~\cite{flask}, and only a small amount of the content is human-curated.
+    Other examples of mathematical databases using such approach contain \citelist{\cite{knotatlas}, \cite{hog}}.
 
 \subsection{Hosting}
 
@@ -241,30 +230,26 @@ For example, both MongoDB and PostgreSQL support indexes based on binary trees, 
 However, there is another query type that is not well supported by binary trees: given a column representing a set of integers, search for rows that contain a particular set, or are contained in a particular set.
 For example, we store the set of ramified primes $R_K$ for number fields $K$, and we want to be able to search on number fields by specifying such constraints on $R_K$.
 Even though we supported such searches through our web interface, many such searches take more than a couple of minutes to perform within MongoDB, which caused our web front-end time out.
-However, in  PostgreSQL, even without relying on any index, these searches become quite reasonable: see Table~\ref{table:ramps}.
-Moreover, we expect to further speed up such queries by taking advantage of GIN indexes in PostgreSQL, which are designed to efficiently handle such searches.
+In PostgreSQL, most of these queries finish in a couple of seconds even when the constraint is not strong enough to justify using an index, as is the case of the first three rows of Table~\ref{table:ramps}, and in the case that the constraint is strong enough GIN indexes support such queries efficiently, as in the last row of Table~\ref{table:ramps}.
 \begin{table}[h!]
   \begin{center}
-  \begin{tabular}{l|r|r}
-Query & MongoDB\footnote{We used WiredTiger for comparisons since it outperforms MMAP when using normal amounts of RAM} & PostgreSQL\\
+  \begin{tabular}{l|r|r|r}
+    Query & result/total & MongoDB\footnote{We used WiredTiger for comparisons since it outperforms MMAP when using normal amounts of RAM} & PostgreSQL\\
 \hline
-$\#\{K : \{2, 5\} \subset R_K\}$ & 10min 2s & 6.9s\\
-$\#\{K: R_K \subset \{2, 3, 5\} \}$ & 14min 34s & 3.42s\\
-$\#\{K : 5 \notin R_K \}$ & 6h 9min & 2.93s
+$\#\{K : 5 \notin R_K \}$ & 71\% & 6h 9min & 2.93s \\
+$\#\{K : \{2, 5\} \subset R_K\}$ & 18\% &10min 2s & 6.9s\\
+$\#\{K: R_K \subset \{2, 3, 5\} \}$ & 4\% & 14min 34s & 3.42s\\
+$\#\{K: R_K \subset \{2, 3, 73\} \}$ & 0.1\% & 8min 11s & 170ms
 \end{tabular}
 \caption{Times for counting the number of number fields satisfying the given constraint on set of ramified primes.}
 \label{table:ramps}
 \end{center}
 \end{table}
-\todoinline{Add 2, 3, 73 to the table, since this uses an index; add column for whether an index is used}
-\todoinline{Footnote 1 is missing}
-\todoinline{mention that both queries become instantaneous on the second run}
 
-% One of the issues with the MongoDB implementation is that we were counting the number of results before anything else
 
-%The transition to PostgreSQL also led to a significant improvement in indexless queries.
 The significant improvement in indexless queries is indeed another considerable advantage of the transition to PostgreSQL.
 Such queries are relevant since non-typical queries can be the most interesting mathematically, and since it is impossible to construct all indexes in advance because the LMFDB offers the user a lot of freedom to select search parameters.
+We present two such examples in Table~\ref{table:indexless}, where the number of results is about 1000 in each case, we also note that both queries are instantaneous on a second run, as both databases do a good job of caching recent queries.
 
 \begin{table}[h!]
   \begin{center}
@@ -274,7 +259,7 @@ Query & MongoDB & PostgreSQL\\
 $\{K : 5 \notin R_K, |\operatorname{disc}_K| \leq 2000\}$ & 1.95s & 0.1s\\
 $\{E : \# \Sha = 4, \rank E = 1, \# E_{\text{torsion}} = 1\}$ & 1min 58s & 1.95s\\
 \end{tabular}
-\caption{Times for counting the number of number fields satisfying the given constraint on set of ramified primes.}
+\caption{Times for fetching the objects/rows satisfying the given constraint.}
 \label{table:indexless}
 \end{center}
 \end{table}
