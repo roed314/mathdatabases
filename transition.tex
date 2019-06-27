@@ -152,12 +152,11 @@ We now go through some of the options for how the user can interact with a datab
 \subhead{Website}
     The user may also interact with the database through a collection of web pages displaying the data.
     These web pages can range widely in complexity.
-    For example, one can manually curate each page individually
-    These pages can be humanly curate each object page \cites{cantorsattic, fanosearch} or, automatically generate them as static web pages \cites{etc, graphclasses, SyzygyData, knotinfo}.
-    Alternatively, one can instead use an web application to generate each page when it is accessed.
-    This is essential for large datasets, as generating and storing a static web page for each object, might be unfeasible.
-    LMFDB follows such approach, where all the content is generated on the fly through a dedicated web application based of Flask~\cite{flask}, and only a small amount of the content is human-curated.
-    Other examples of mathematical databases using such approach contain \citelist{\cite{knotatlas}, \cite{hog}}.
+    For example, one can manually curate each page individually \cites{cantorsattic, fanosearch} or automatically generate them as static web pages \cites{etc, graphclasses, SyzygyData, knotinfo}.
+    Alternatively, one can instead use a web application to generate each page when it is accessed.
+    This is essential for large datasets, as generating and storing a static web page for each object can be infeasible.
+    LMFDB follows such an approach, where all the content is generated on the fly through a dedicated web application based on Flask~\cite{flask}, and only a small amount of the content is human-curated.
+    Other examples of mathematical databases using such an approach include \cites{knotatlas, hog}.
 
 \subsection{Hosting}
 
