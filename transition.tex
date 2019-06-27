@@ -366,10 +366,11 @@ Of course, the LMFDB has used functions since the beginning, but often these fun
 
 The task of switching from MongoDB to PostgreSQL was made more difficult by this low level of abstraction, but it also presented an opportunity.
 Since the database change necessitated changing a large number of files throughout the project, it offered a perfect time to make additional changes.
-We highlight four in particular to illustrate the kinds of encapsulation that accompanied the database change.
+We highlight three in particular to illustrate the kinds of encapsulation that accompanied the database change: a new data-management interface, more robust and uniform handling of search inputs, and common tools for creating statistics pages.
 
-First, we centralized many of the scripts used to upload data into a suite of data management tools.
-\todo{Finish description of data management tools (changing schema, importing new data from Python and from files)}
+We centralized many of the scripts used to upload data into a suite of data management tools.
+There is now a single object available from the Sage command line that has methods for performing a variety of tasks: creating new tables and modifying existing schemas, copying data to and from text files, moving data between the beta and production versions of the database, accessing PostgreSQL's tools for analyzing slow queries, adding indexes and constraints, and tracking statistics as data is changed.
+The centralization of these tasks allows us to reduce code duplication and to use best practices in handling errors.
 
 Each section of the LMFDB has a search page, where users can input constraints they would like their curve, field or group to satisfy.
 Some input boxes require an integer or list of integers; others need a label string in a particular format; others a rational number.
