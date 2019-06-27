@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass{amsart}
 \usepackage{amsmath,amssymb,amsrefs}
 \usepackage{url}
 \usepackage{xcolor}
@@ -24,12 +24,22 @@
 
 \newcommand{\subhead}[1]{\vspace{0.1in} \noindent \textbf{#1.}\ \ }
 
-\title{Maintaining Mathematical Databases}
-\author{Edgar Costa and David Roe}
-
-
-
 \begin{document}
+\title{Maintaining Mathematical Databases}
+
+\author{Edgar Costa}
+\address{Department of Mathematics, Massachusetts Institute of Technology, Cambridge, MA 02139, USA}
+\email{edgarc@mit.edu}
+\urladdr{\url{https://edgarcosta.org}}
+\author{Edgar Costa}
+\address{Department of Mathematics, Massachusetts Institute of Technology, Cambridge, MA 02139, USA}
+\email{roed@mit.edu}
+\urladdr{\url{http://math.mit.edu/~roed/}}
+
+\begin{abstract}
+
+\end{abstract}
+
 \maketitle
 
 \section{Introduction}
@@ -38,7 +48,7 @@ Mathematics has a long history of using computations to aid in forming conjectur
 In the past few decades, computers have taken on a central role, both in performing many calculations and in hosting the results.
 As computational and storage capacity has increased, the size of these results has grown to the point where the task of searching and maintaining the data requires specialized knowledge.
 We discuss some of the challenges involved, as well as the main tools available to address them.
-We focus on one particular case study: the effort to migrate the L-functions and modular forms database (LMFDB)~\cite{lmfdb} from MongoDB~\cite{mongo} to PostgreSQL~\cite{postgres}.
+We focus on one particular case study: the effort to migrate the \emph{$L$-functions and Modular Forms Database (LMFDB)}~\cite{lmfdb} from MongoDB~\cite{mongo} to PostgreSQL~\cite{postgres}.
 
 
 We hope that this article will be useful to mathematicians hoping to create their own databases; to database engineers who are considering switching from MongoDB to PostgreSQL; and to mathematicians participating in large software projects for whom some of the LMFDB's lessons might prove useful.
@@ -62,7 +72,7 @@ Some databases are embedded within computer algebra systems such as Sagemath, Ma
 which allows a user to perform further computations with the objects in the database easily.
 Others are available online in various formats; we will discuss different methods of data distribution in Section~\ref{sec:nutsbolts}.
 
-Collecting a large number of examples into one database makes possible a valuable paradigm for experimental mathematics: the ability to search through examples for a few that have particular desired properties.
+Collecting a large number of examples into one database makes possible a valuable paradigm for experimental mathematics: the ability to search through examples for a few that have particular specific desired properties or are counterexamples to a conjecture.
 In addition to the LMFDB, a number of other mathematical databases also have search functionality as one of their core features \citelist{\cite{umrk} \cite{findstat} \cite{oeis} \cite{isc} \cite{cydata}}.
 Searching requires a more substantial infrastructure than is needed for just displaying data; the discussion in Section \ref{sec:MvsP} highlights some of the factors to consider when choosing a search engine.
 
@@ -74,7 +84,7 @@ Such exposition is an important part of the presentation of a database, but is p
 
 Another important aspect of a database project that falls beyond the scope of this article is the social and financial efforts required to sustain a collaboration.
 There are numerous examples of projects that are no longer accessible because the authors have moved on or passed away.
-Projects also have various ways of reaching out to potential developers, ranging from academic workshops and conferences, to the standard open source tools such as Github~\cite{github}, to forms allowing users to easily submit data \citelist{\cite{findstat} \cite{hog} \cite{oeis}}.
+Projects also have various ways of reaching out to potential developers, ranging from academic workshops and conferences, to the standard open source tools such as GitHub~\cite{github}, to forms allowing users to easily submit data \citelist{\cite{findstat} \cite{hog} \cite{oeis}}.
 In this article, we limit our attention to the technical side of the job: from setting up hosting servers to the different options for database software to details on how the LMFDB functions.
 
 \subsection{The LMFDB project}
@@ -171,7 +181,7 @@ Finally, we discuss some of the options regarding where to physically store the 
     However, the scope might be limited, as one may not have full access to the hosting servers.
 
 \subhead{Web framework}
-    Another convenient option is to use a web framework service (e.g. Github, Cocalc, Wordpress/wikidot/blogs).
+    Another convenient option is to use a web framework service (e.g. GitHub, CoCalc, Wordpress/Wikidot/blogs).
     These options offer a lower initial set up cost with a minimal long term maintenance cost, however, the scope is also limited by the framework.
 
 \subhead{On a university/personal server}
@@ -337,12 +347,12 @@ After several false starts, exporting 400GB of data to text files took three or 
 
 Adapting the LMFDB codebase to use PostgreSQL took longer, and we are still finishing up a few bits of that part of the transition.
 The backend code for the LMFDB is written in Python, and the Python bindings for MongoDB and PostgreSQL take a very different approach.
-Pymongo offers a high level interface to the database that integrates python data structures.
+PyMongo~\cite{pymongo} offers a high level interface to the database that integrates python data structures.
 Queries are performed by constructing dictionaries that specify the values of certain columns and have special keys for adding more complicated constraints such as inequalities or boolean combinations of conditions.
-Psycopg2, on the other hand, is a thin interface that offers the user the ability to execute SQL statements.
+Psycopg~\cite{psycopg}, on the other hand, is a thin interface that offers the user the ability to execute SQL statements.
 Constructing queries using dictionaries worked well as a model for the LMFDB, since the search pages provided many inputs that could be processed independently into a dictionary.
 Moreover, we did not want to require LMFDB developers to learn SQL.
-We, therefore, implemented a high level interface to PostgreSQL that translated a dictionary-based query system similar to Pymongo's into SQL SELECT statements.
+We, therefore, implemented a high level interface to PostgreSQL that translated a dictionary-based query system similar to PyMongo's into SQL SELECT statements.
 
 \section{Benefits}
 
