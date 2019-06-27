@@ -45,7 +45,7 @@ We hope that this article will be useful to mathematicians hoping to create thei
 
 \section{Using databases in mathematics}
 
-In order to put our work on the LMFDB on context, we give an overview of some of the other existing databases.
+In order to put our work on the LMFDB on context, we give an overview of some other existing mathematical databases.
 
 We will be primarily interested in datasets consisting of information on mathematical objects, such as specific number fields, graphs or curves, rather than on mathematical statements.
 There are many valuable resources focusing on theorems and propositions, from general encyclopedias such as the Encyclopedia of Mathematics~\cite{encofmath} and Mathworld~\cite{mathworld} to the preprint server arXiv~\cite{arxiv} to numerous domain specific references \citelist{\cite{groupprops} \cite{graphclasses} \cite{complexityzoo}}.
@@ -198,10 +198,9 @@ As a relational database, PostgreSQL stores data in a structured way, where the 
 MongoDB and PostgreSQL offer two different database paradigms.
 MongoDB, as a document-oriented database, is meant to facilitate the storage of unstructured data, where the fields and types present in each document can vary across a collection.
 This flexibility is extremely convenient, but can also easily lead to errors and unnecessary overhead for a structured database.
-For example, field names were kept short in MongoDB to save on space usage and multiple typos in the field names were found during the transition to PostgreSQL.
+For example, field names were kept short in MongoDB to save space, and multiple typos in the field names were found during the transition to PostgreSQL.
 Furthermore, differing layouts across documents requires more complicated processing code.
-In contrast, PostgreSQL is a relational database, where fixed schemas enable queries across multiple tables.
-For example, one can search and access data in relation to other data in the database. \todo{This seems redundant and awkwardly phrased}
+In contrast, PostgreSQL is a relational database, with fixed schemas that enable queries across multiple tables.
 Since the LMFDB was already a uniform set of fields in MongoDB (so much so that an inventory application was written to extract a schema from the data), creating a formal schema was fairly straightforward.
 Database-level schema support improves robustness and performance, and PostgreSQL's JSONB type allows for schemaless columns when desired.
 
@@ -270,9 +269,7 @@ PostgreSQL's \texttt{COPY FROM} command allows for rapid importing of data from 
 For example, we managed to import a 14398359 row table from 680GB text table in about 8 hours.
 With MongoDB we speculate that would have taken us a couple of days.
 Creating indexes in PostgreSQL is also dramatically faster than in MongoDB, approximately by order of magnitude.
-Moreover, PostgreSQL supports transactions,\footnote{MongoDB 4.0 added support for transactions but was released after we switched to PostgreSQL.} allowing for atomic changes to multiple rows in a table.
-This feature makes it possible to safely make some modifications in place, rather than creating a copy of the whole table when changes are made.
-PostgreSQL also offers numerous open source front-ends and administration tools~\cite{pgadmin,adminer} that lower the learning curve for the SQL language.
+Additionally, PostgreSQL offers numerous open source front-ends and administration tools~\cite{pgadmin,adminer} that lower the learning curve for the SQL language.
 The transition has substantially improved database management.
 
 In addition to performance improvements, PostgreSQL makes new kinds of queries possible.
@@ -361,7 +358,8 @@ The task of switching from MongoDB to PostgreSQL was made more difficult by this
 Since the database change necessitated changing a large number of files throughout the project, it offered a perfect time to make additional changes.
 We highlight four in particular to illustrate the kinds of encapsulation that accompanied the database change.
 
-First, we centralized many of the scripts used to upload data into a suite of data management tools. \todo{Finish description of data management tools (changing schema, importing new data from Python and from files)}
+First, we centralized many of the scripts used to upload data into a suite of data management tools.
+\todo{Finish description of data management tools (changing schema, importing new data from Python and from files)}
 
 Each section of the LMFDB has a search page, where users can input constraints they would like their curve, field or group to satisfy.
 Some input boxes require an integer or list of integers; others need a label string in a particular format; others a rational number.
@@ -389,10 +387,8 @@ In addition to the intrinsic benefits of using PostgreSQL, the transition has ea
 While many of these would have been possible using MongoDB, the improved abstraction made implementing them much more manageable.
 And some, such as dynamic statistics and verifications, rely on PostgreSQL's improved performance and the relational model.
 
-PostgreSQL supports transactions, allowing one to roll back to a functional earlier state if some later action fails.
-\todo{second time we mention this}
-We have built these transactions into our interface layer, and this change has enabled new paradigms when making data changes.
-Rather than having to create a whole new copy of a table when making substantial changes, transactions allow sufficient peace-of-mind that more operations can be performed in-place.
+PostgreSQL supports transactions,\footnote{MongoDB 4.0 added support for transactions but was released after we switched to PostgreSQL.} allowing one to roll back to a functional earlier state if some later action fails.
+We have built these transactions into our interface layer, making it possible to safely modify rows in place, rather than creating a copy of the whole table when changes are made.
 
 The fact that all interactions with the database pass through our interface layer allows us to add custom logging.
 For example, all queries that take longer than a threshold are recorded, allowing us to focus on creating the right indexes.
@@ -409,12 +405,14 @@ Many browse pages in the LMFDB already had a link to view a random object.
 Because of the new search wrapper abstraction, it was easy to add the ability to return a random object satisfying a search query.
 This feature saves time when browsing since it allows you to more quickly reach the homepage of an object satisfying a particular constraint, such as CM elliptic curve or a weight one modular form.
 
+During the transition to PostgreSQL, we modified the search results pages so that they do not always provide the total count.
+The count is provided only if it is sufficiently small or has already been cached (though it is available in every case if requested).
+This change dramatically improved response times in some cases, where a large number of results made finding the first 50 much easier than counting them all.
+
 Mathematical data differ from data in most other applications because it has a notion of correctness that can be checked, rather than just providing a record of a real-world measurement.
 Some of these verifications are internal, such as checking that the defining polynomial of a number field is irreducible or that the trace of a modular form is zero at each inert prime not dividing the level.
 Others rely on connections with other tables in the database, such as checking that invariants matchup between an elliptic curve and its corresponding modular form.
 The switch to PostgreSQL made it possible to create a framework to write such consistency checks and run them whenever new data is added.
-
-\todoinline{Discuss the fact that we can now return a list of results without returning the total count: this had major speed consequences}
 
 \bibliography{biblio}
 
