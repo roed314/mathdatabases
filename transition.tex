@@ -34,6 +34,13 @@ As computational and storage capacity has increased, the size of these results h
 We discuss some of the challenges involved, as well as the main tools available to address them.
 We focus on one particular case study: the effort to migrate the L-functions and modular forms database (LMFDB)~\cite{lmfdb} from MongoDB~\cite{mongo} to PostgreSQL~\cite{postgres}.
 
+
+We hope that this article will be useful to mathematicians hoping to create their own databases; to database engineers who are considering switching from MongoDB to PostgreSQL; and to mathematicians participating in large software projects for whom some of the LMFDB's lessons might prove useful.
+
+\section{Using databases in mathematics}
+
+In order to put our work on the LMFDB on context, we give an overview of some of the other existing databases.
+
 We will be primarily interested in datasets consisting of information on mathematical objects, such as specific number fields, graphs or curves, rather than on mathematical statements.
 There are many valuable resources focusing on theorems and propositions, from general encyclopedias such as the Encyclopedia of Mathematics~\cite{encofmath} and Mathworld~\cite{mathworld} to the preprint server arXiv~\cite{arxiv} to numerous domain specific references \citelist{\cite{groupprops} \cite{graphclasses} \cite{complexityzoo}}.
 However, the design imperatives for such projects tend to be very different from the type of database we're interested in.
@@ -42,7 +49,7 @@ Moreover, because humans are directly creating the content, the tools for inputt
 Wiki \citelist{\cite{cantorsattic} \cite{complexityzoo} \cite{groupprops} \cite{knotatlas}} and blog \cite{fanosearch} software is often used to make it easier for many users to be involved in content creation.
 Finally, when algorithms are generating data, it is possible to end up with orders of magnitude more content, leading to various challenges of scale not faced by human-created datasets.
 
-One of the main roles that a mathematical database plays is to record the results of difficult\todo{and demanding?} computations.
+One of the main roles that a mathematical database plays is to record the results of interesting computations.
 Such collections of examples are useful in many areas of mathematics, including group theory \citelist{\cite{groupatlas} \cite{smallgroups} \cite{transgroups}}, Lie theory \citelist{\cite{lieatlas} \cite{umrk}}, graph theory \cite{hog}, knot theory \cite{knotinfo}, integer sequences \cite{oeis}, Euclidean geometry \cite{etc}, algebraic geometry \cite{fanosearch} and number theory \citelist{\cite{primepages} \cite{lmfdb}}.
 In each case, much of the utility of the database is shaped by how the results are displayed to a user, whether as a list of integers with annotations, a picture of a knot or a webpage showing various invariants of the object.
 Some databases are embedded within computer algebra systems such as Sagemath, Magma, or GAP \citelist{\cite{magmadb} \cite{smallgroups} \cite{transgroups}},
@@ -65,9 +72,7 @@ There are numerous examples of projects that are no longer accessible because th
 Projects also have various ways of reaching out to potential developers, ranging from academic workshops and conferences, to the standard open source tools such as Github~\cite{github}, to solicitations\todo{Edgar: solicitation sounds weird} for data \citelist{\cite{findstat} \cite{hog} \cite{oeis}}.
 In this article, we limit our attention to the technical side of the job: from setting up hosting servers to the different options for database software to details on how the LMFDB functions.
 
-We hope that this article will be useful to mathematicians hoping to create their own databases; to database engineers who are considering switching from MongoDB to PostgreSQL; and to mathematicians participating in large software projects for whom some of the LMFDB's lessons might prove useful.
-
-\section{The LMFDB project}
+\subsection{The LMFDB project}
 The Langlands program, first formulated by Robert Langlands in the 1960s, is a set of widespread conjectures aimed at understanding and explaining the interconnections between a dizzying array of subfields of mathematics, including number theory, representation theory, algebraic geometry, and harmonic analysis---and in the 21st century its reach continues to expand.
 The Langlands program has been called ``one of the biggest ideas to come out of mathematics in the last fifty years'' and ``the Grand Unified Theory of mathematics''~\cite{frenkel}*{p. 3}.
 
@@ -118,10 +123,10 @@ We organize the options for how to encode the database in a machine readable for
     However, such sophisticated solution will most likely require additional software for users to to manipulate the data.
     There are many types of database available; in this article, we fill focus on two:
     \begin{itemize}
-      \item relational database --- a collection of ledger-style tables with a fixed schema, where the structure in each row of is constant.
-        This kind of databases have been prevalent for decades and some of their famous instantiations are Oracle, MySQL, PostgreSQL, and SQLite.
+      \item relational database --- a collection of ledger-style tables with a fixed schema, where the structure in each row is constant.
+        This kind of database has been prevalent for decades; major examples include Oracle \cite{oracle}, MySQL \cite{mysql}, PostgreSQL \cite{postgres}, and SQLite \cite{sqlite}.
       \item document oriented database --- a schema free database, where each object is stored in a single instance in the database, and every stored object can be different from every other.
-        MongoDB is one of the most famous instantiations of such paradigm.
+        MongoDB \cite{mongo} is one of the most famous instantiations of such paradigm.
     \end{itemize}
     In Section~\ref{sec:MvsP} we will contrast PostgreSQL and MongoDB.
 \end{itemize}
@@ -162,7 +167,7 @@ We now go through some of the options for how the user can interact with a datab
     \end{itemize}
     Alternatively, one can instead use an web application to generate each page whet tis accessed.
     This is essential for large datasets, as generating and storing a static web page for each object, might be unfeasible.
-    LMFDB follows such approach, where all the content is generated on the fly through a dedicated web application based of Flask \todo{addref \url{http://flask.pocoo.org/}}, and only some small amount of the content is humanly curated, definitions and others.
+    LMFDB follows such approach, where all the content is generated on the fly through a dedicated web application based of Flask \cite{flask}, and only a small amount of the content is human-curated.
     Other examples of mathematical databases using such approach contain:
     \begin{itemize}
       \item Knot Atlas \url{http://katlas.org}
@@ -172,18 +177,17 @@ We now go through some of the options for how the user can interact with a datab
 
 \subsection{Hosting}
 
-
-For last we discuss some of the options regarding where to physically store the database.
+Finally, we discuss some of the options regarding where to physically store the database.
 
 \begin{itemize}
   \item personal hard-drive
     ---
-    This is one of the simples options, as it has no initial set up cost,
-    however, it severely limits the accessibility of the database to others
+    This is one of the simplest options, as it has no initial set up cost.
+    However, it severely limits the accessibility of the database to others.
   \item personal web page
     ---
     If one already maintains a personal web page, a convenient option is to also use it to host their database.
-    However, the scope might be limited, as one does not has full access to the hosting servers.
+    However, the scope might be limited, as one may not have full access to the hosting servers.
   \item web framework
     ---
     Another convenient option is to use a web framework service (e.g. Github, Cocalc, Wordpress/wikidot/blogs).
@@ -191,16 +195,12 @@ For last we discuss some of the options regarding where to physically store the 
   \item On a university/personal server
     ---
     This solution provides complete control.
-    However, not only, there is a high initial monetary/effort cost of buying the servers and setting them up, one also needs to upkeep the servers for the rest of their life.
-    Furthermore, the scope might be limited by some of the initial hardware choices.
+    However, there is both a high initial cost in buying the servers and setting them up.  Moreover, one also needs to maintain the server for the duration of its life: such tasks include installing security updates, dealing with service interruptions and managing backups.
+    In addition, the database's scope might be limited by the capabilities of the initial hardware choices.
   \item using a hosting service
     ---
-    Servers in the cloud (e.g. Google, AWS) provides complete control, this has an monetary associated maintenance costs, however, one does not need to worry about mainentance tasks, uptime, and etc.
+    Servers in the cloud (e.g. Google, AWS) provide complete control and have no monetary startup costs, but require ongoing payments proportional to the resources used.  The main benefit is that one does not need to worry about maintaining the servers themselves.  This option is currently used by the LMFDB.
 \end{itemize}
-
-
-
-
 
 
 \section{MongoDB vs PostgreSQL}
