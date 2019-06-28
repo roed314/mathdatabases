@@ -74,43 +74,43 @@ Moreover, these code changes enabled us to add new features and provided a bette
 
 \section{Using databases in mathematics}
 
-In order to put our work on the LMFDB on context, we give an overview of some other existing mathematical databases.
+In order to put our work on the LMFDB in context, we give an overview of some other existing mathematical databases.
 
 We will be primarily interested in datasets consisting of information on mathematical objects, such as specific number fields, graphs or curves, rather than on mathematical statements.
-There are many valuable resources focusing on theorems and propositions, from general encyclopedias such as the Encyclopedia of Mathematics~\cite{encofmath} and Mathworld~\cite{mathworld} to the preprint server arXiv~\cite{arxiv} to numerous domain specific references \citelist{\cite{groupprops} \cite{graphclasses} \cite{complexityzoo}}.
+There are many valuable resources focusing on theorems and propositions, from general encyclopedias such as the Encyclopedia of Mathematics~\cite{encofmath} and Mathworld~\cite{mathworld} to the preprint server arXiv~\cite{arxiv} to numerous domain specific references \cites{groupprops, graphclasses, complexityzoo}.
 However, the design imperatives for such projects tend to be very different from the type of database we're interested in.
 Since the content of theorem-oriented sites tends to be textual, the standard tools for internet searching such as Google tend to work effectively.
 Moreover, because humans are directly creating the content, the tools for inputting and managing data are different.
-Wiki \citelist{\cite{cantorsattic} \cite{complexityzoo} \cite{groupprops} \cite{knotatlas}} and blog \cite{fanosearch} software is often used to make it easier for many users to be involved in content creation.
+Wiki \cites{cantorsattic, complexityzoo, groupprops, knotatlas} and blog \cite{fanosearch} software is often used to make it easier for many users to be involved in content creation.
 Finally, when algorithms are generating data, it is possible to end up with orders of magnitude more content, leading to various challenges of scale not faced by human-created datasets.
 
 One of the main roles that a mathematical database plays is to record the results of interesting computations.
-Such collections of examples are useful in many areas of mathematics, including group theory \citelist{\cite{groupatlas} \cite{smallgroups} \cite{transgroups}}, Lie theory \citelist{\cite{lieatlas} \cite{umrk}}, graph theory \cite{hog}, knot theory \cite{knotinfo}, integer sequences \cite{oeis}, Euclidean geometry \cite{etc}, algebraic geometry \cite{fanosearch} and number theory \citelist{\cite{primepages} \cite{lmfdb}}.
+Such collections of examples are useful in many areas of mathematics, including group theory \cites{groupatlas, smallgroups, transgroups, groupnames}, Lie theory \cites{lieatlas, umrk}, graph theory \cite{hog}, knot theory \cite{knotinfo}, integer sequences \cite{oeis}, Euclidean geometry \cite{etc}, algebraic geometry \cite{fanosearch} and number theory \cites{primepages, lmfdb}.
 In each case, much of the utility of the database is shaped by how the results are displayed to a user, whether as a list of integers with annotations, a picture of a knot or a webpage showing various invariants of the object.
-Some databases are embedded within computer algebra systems such as Sagemath, Magma, or GAP \citelist{\cite{magmadb} \cite{smallgroups} \cite{transgroups}},
+Some databases \cites{magmadb, smallgroups, transgroups} are embedded within computer algebra systems such as Sagemath \cite{sage}, Magma \cite{magma}, or GAP \cite{gap},
 which allows a user to perform further computations with the objects in the database easily.
 Others are available online in various formats; we will discuss different methods of data distribution in Section~\ref{sec:nutsbolts}.
 
 Collecting a large number of examples into one database makes possible a valuable paradigm for experimental mathematics: the ability to search through examples for a few that have particular specific desired properties or are counterexamples to a conjecture.
-In addition to the LMFDB, a number of other mathematical databases also have search functionality as one of their core features \citelist{\cite{umrk} \cite{findstat} \cite{oeis} \cite{isc} \cite{cydata} \cite{hog} \cite{knotinfo}}.
+In addition to the LMFDB, a number of other mathematical databases also have search functionality as one of their core features \cites{umrk, findstat, oeis, isc, cydata, hog, knotinfo}.
 Searching requires a more substantial infrastructure than is needed for just displaying data; the discussion in Section \ref{sec:MvsP} highlights some of the factors to consider when choosing a search engine.
 
-A final role played by many online mathematical databases is to provide domain-specific exposition surrounding the examples that they host \citelist{\cite{primepages} \cite{graphclasses} \cite{complexityzoo} \cite{cantorsattic} \cite{findstat} \cite{knotinfo}}.
+A final role played by many online mathematical databases is to provide domain-specific exposition surrounding the examples that they host \cites{primepages, graphclasses, complexityzoo, cantorsattic, findstat, knotinfo, groupnames}.
 The LMFDB aims to provide enough definitions and background for mathematically literate users to be able to understand the contents.
 The main tool for doing so is a webpage element called a \emph{knowl}, which is a bit of context-free knowledge.
 Within the LMFDB, knowls are embedded inside webpages or other knowls, and expand to provide more information when clicked.
-Such exposition is an important part of the presentation of a database, but is peripheral to our main topic of the functioning of the underlying database.
+Such exposition is an important part of the presentation of a database, but is peripheral to our main topic of the functioning of the underlying system.
 
 Another important aspect of a database project that falls beyond the scope of this article is the social and financial efforts required to sustain a collaboration.
 There are numerous examples of projects that are no longer accessible because the authors have moved on or passed away.
-Projects also have various ways of reaching out to potential developers, ranging from academic workshops and conferences, to the standard open source tools such as GitHub~\cite{github}, to forms allowing users to easily submit data \citelist{\cite{findstat} \cite{hog} \cite{oeis}}.
-In this article, we limit our attention to the technical side of the job: from setting up hosting servers to the different options for database software to details on how the LMFDB functions.
+Projects have various ways of reaching out to potential developers, ranging from academic workshops and conferences, to the standard open source tools such as GitHub~\cite{github}, to forms allowing users to easily submit data \cites{findstat, hog, oeis}.
+In this article, we limit our attention to the technical side of the job: from setting up hosting servers, to the different options for database software, to details on how the LMFDB functions.
 
 \subsection{The LMFDB project}
 The Langlands program, first formulated by Robert Langlands in the 1960s, is a set of widespread conjectures aimed at understanding and explaining the interconnections between a dizzying array of subfields of mathematics, including number theory, representation theory, algebraic geometry, and harmonic analysis---and in the 21st century its reach continues to expand.
 The Langlands program has been called ``one of the biggest ideas to come out of mathematics in the last fifty years'' and ``the Grand Unified Theory of mathematics''~\cite{frenkel}*{p. 3}.
 
-To provide compelling visual and computational displays of the Langlands program ``in action'', a database was created called the \emph{$L$-functions and Modular Forms Database} (LMFDB), available at the website \url{http://www.lmfdb.org/}.
+To provide compelling visual and computational displays of the Langlands program ``in action,'' a database was created called the \emph{$L$-functions and Modular Forms Database} (LMFDB), available at the website \url{http://www.lmfdb.org/}.
 The LMFDB was first conceived in 2007~\cite{cremona-16} and remains the object of a significant amount of ongoing work by over one hundred mathematicians~\cite{lmfdb}*{Acknowledgments}.
 
 The LMFDB hosts a variety of databases and connects them through the Langlands program; we recommend online experimentation or~\cite{cremona-16} for more details.
@@ -119,8 +119,8 @@ The LMFDB hosts a variety of databases and connects them through the Langlands p
 \section{Nuts and bolts}
 \label{sec:nutsbolts}
 
-When it comes to hosting a mathematical database, there is a wide range of options available.
-Until the last several decades, the only option available was to use a print format, for example in a book or an article, and rely on a publisher to distribute its content and to make it available to the rest of scientific community.
+When it comes to hosting a mathematical database, there are a wide range of options available.
+Until the last several decades, the only choice was to use a print format, for example in a book or an article, and rely on a publisher to distribute its content and to make it available to the rest of scientific community.
 Since the publisher takes care of most of the technical issues, this method offers the benefit of simplicity to the author, but distribution in print provides a number of disadvantages compared to digital distribution via the internet.
 For instance, the act of publishing through print is a lengthy process, and the data is less immediately accessible than online distribution, putting barriers in the way of the database user.
 Furthermore, once the data is published is extremely difficult to address  mistakes, add new data or features.
@@ -140,25 +140,26 @@ We organize the options for how to encode the database in a machine readable for
 
 \subhead{Human readable files}
      Storing the data set in a human readable format, like a  plain text file or a comma-separated values file, is one of the most straightforward possible solutions.
-     It also does not require special software to access the data, very similar to a table in print.
+     It does not require special software to access the data, very similar to a table in print.
     However, it can be cumbersome and impractical to search or manipulate the data without additional tools.
 
 \subhead{Application dependent files}
     A more advanced solution is to store the dataset in an application dependent format.
-    For example, the Small Groups Library~\cite{smallgroups} available in the GAP computer algebra system~\cite{gap}.
+    For example, the Small Groups Library~\cite{smallgroups} available in the GAP computer algebra system~\cite{gap} uses a specific method to encode solvable groups.
     In many cases, such a choice enables direct manipulation of the desired objects.
     For example, using SageMath pickles makes it easy to load the data into an active SageMath session.
     However, the dataset will not likely be efficiently searchable, and most content searches would need to loop over every item in the dataset (a sequential search).
+    Moreover, specialized data formats are vulnerable to backward-incompatible changes in the software used to load them.
 
 \subhead{Database structure}
-    Finally, one may store the dataset in a database format, i.e., in a format optimized for searching.
-    However, such sophisticated solution will most likely require additional software for users to manipulate the data.
+    Finally, one may store the dataset in a database format, i.e. in a format optimized for searching.
+    As above, such a solution will require additional software for users to manipulate the data, but the data formats are more stable in practice since database software is widely used beyond mathematics.
     There are many types of database available; in this article, we will focus on two:
     \begin{itemize}
       \item relational database --- a collection of ledger-style tables with a fixed schema, where the structure in each row is constant.
         This kind of database has been prevalent for decades; major examples include Oracle~\cite{oracle}, MySQL~\cite{mysql}, PostgreSQL~\cite{postgres}, and SQLite~\cite{sqlite}.
       \item document oriented database --- a schema free database, where each object is stored in a single instance in the database, and every stored object can be different from every other.
-        MongoDB~\cite{mongo} is one of the most famous instantiations of such paradigm.
+        MongoDB~\cite{mongo} is one of the most famous instantiations of this paradigm.
     \end{itemize}
     In Section~\ref{sec:MvsP} we will contrast PostgreSQL and MongoDB.
 
@@ -170,8 +171,8 @@ Different options have varying degrees of accessibility and utility; we describe
 
 \subhead{Direct access}
     The author may decide to provide direct access to the database.
-    For example, the author may make the database files available through E-mail or a web page; or
-    allow direct read access to an SQL server.
+    For example, the author may make the database files available through email or a webpage; or
+    allow direct read access to an SQL server \cite{umrk}.
 
 \subhead{Computer algebra system}
     If the database is provided in a computer algebra system dependent files, these might evolve into being part of algebra system itself.
@@ -181,10 +182,10 @@ Different options have varying degrees of accessibility and utility; we describe
 \subhead{Website}
     The user may also interact with the database through a collection of web pages displaying the data.
     These web pages can range widely in complexity.
-    For example, one can manually curate each page individually \cites{cantorsattic, fanosearch} or automatically generate them as static web pages \cites{etc, graphclasses, SyzygyData, knotinfo}.
+    For example, one can manually curate each page individually \cites{cantorsattic, fanosearch} or automatically generate them as static web pages \cites{etc, graphclasses, SyzygyData, knotinfo, groupnames}.
     Alternatively, one can instead use a web application to generate each page when it is accessed.
     This is essential for large datasets, as generating and storing a static web page for each object can be infeasible.
-    LMFDB follows such an approach, where all the content is generated on the fly through a dedicated web application based on Flask~\cite{flask}, and only a small amount of the content is human-curated.
+    The LMFDB follows such an approach, where most content is generated on the fly through a dedicated web application based on Flask~\cite{flask} and HTML templates, and only a small amount of the content is human-curated.
     Other examples of mathematical databases using such an approach include \cites{knotatlas, hog}.
 
 \subsection{Hosting}
@@ -197,7 +198,7 @@ We focus on how each possibility varies in terms of cost, ease of maintenance an
     However, it severely limits the accessibility of the database to others.
 
 \subhead{Personal web page}
-    If one already maintains a personal web page, a convenient option is to also use it to host their database.
+    If one already maintains a personal web page, a convenient option is to also use it to host the database.
     However, the scope might be limited, as one may not have full access to the hosting servers.
 
 \subhead{Web framework}
@@ -206,23 +207,23 @@ We focus on how each possibility varies in terms of cost, ease of maintenance an
 
 \subhead{On a university/personal server}
     This solution provides complete control.
-    However, there is both a high initial cost in buying the servers and setting them up.  Moreover, one also needs to maintain the server for the duration of its life: such tasks include installing security updates, dealing with service interruptions and managing backups.
+    However, there is both a high initial cost in buying the servers and setting them up.  Moreover, one also needs to maintain the server for the duration of its life: installing security updates, dealing with service interruptions and managing backups.
     In addition, the database's scope might be limited by the capabilities of the initial hardware choices.
-    The LMFDB uses a couple of servers bought through grants to provide a development platform for our contributors, and host \url{beta.lmfdb.org}
+    The LMFDB uses a couple of servers purchased through grants to provide a development platform for our contributors, and host \url{beta.lmfdb.org}
 
 \subhead{Using a hosting service}
 Servers in the cloud \cites{aws, gcp} provide complete control and have no monetary startup costs, but require ongoing payments proportional to the resources used.
-    The main benefit is that one does not need to worry about maintaining the servers themselves.
+    The main benefit is that one does not need to worry about maintaining the servers themselves; cloud servers also have the ability to easily scale the resources available if necessary.
     This option is currently used by the LMFDB to host \url{www.lmfdb.org}.
 
 
 \section{MongoDB vs PostgreSQL}
 \label{sec:MvsP}
 
-In 2009, when MongoDB was initially released as an open source project in it presented itself as an exciting new option to consistently store mathematical objects.
-As a document-oriented database, where each document is stored independently in a JSON-like format, it did not require a schema, a boon when creating new collections of mathematical objects where the data requirements only gradually became clear.
-Moreover, Python bindings were available, a language that many computational number theorists are familiar with due to its use in SageMath.
-This setup worked well for many years; however, as the LMFDB grew various shortcomings of using a non relational database became more evident.
+In 2009, when MongoDB was initially released as an open source project, it presented itself as an exciting new option to easily store mathematical objects.
+As a document-oriented database, where each document was stored independently in a JSON-like format, it did not require a schema, a boon when creating new collections of mathematical objects where the data requirements only gradually became clear.
+Moreover, Python bindings were available, a language that many computational number theorists were familiar with due to its use in SageMath.
+This setup worked well for many years; however, as the LMFDB grew, various shortcomings of using a non-relational database became more evident.
 Over the last year, we have transitioned from MongoDB to PostgreSQL, a popular open source implementation of the SQL language that grew out of earlier projects founded in the 1970s and 80s.
 As a relational database, PostgreSQL stores data in a structured way, where the data is organized in tables, and each table has a specified schema, i.e., each row must have the same layout, with the types of columns constant across all rows.
 
@@ -232,7 +233,7 @@ MongoDB and PostgreSQL offer two different database paradigms.
 MongoDB, as a document-oriented database, is meant to facilitate the storage of unstructured data, where the fields and types present in each document can vary across a collection.
 This flexibility is extremely convenient, but can also easily lead to errors and unnecessary overhead for a structured database.
 For example, field names were kept short in MongoDB to save space, and multiple typos in the field names were found during the transition to PostgreSQL.
-Furthermore, differing layouts across documents requires more complicated processing code.
+Furthermore, differing layouts across documents required more complicated processing code.
 In contrast, PostgreSQL is a relational database, with fixed schemas that enable queries across multiple tables.
 Since the LMFDB was already a uniform set of fields in MongoDB (so much so that an inventory application was written to extract a schema from the data), creating a formal schema was fairly straightforward.
 Database-level schema support improves robustness and performance, and PostgreSQL's JSONB type allows for schemaless columns when desired.
@@ -260,8 +261,8 @@ Having such indexes available is key to providing quick search results for typic
 For example, both MongoDB and PostgreSQL support indexes based on binary trees, which work well for totally ordered data such as integers and strings.
 However, there is another query type that is not well supported by binary trees: given a column representing a set of integers, search for rows that contain a particular set, or are contained in a particular set.
 For example, we store the set of ramified primes $R_K$ for number fields $K$, and we want to be able to search on number fields by specifying such constraints on $R_K$.
-Even though we supported such searches through our web interface, many such searches take more than a couple of minutes to perform within MongoDB, which caused our web front-end time out.
-In PostgreSQL, most of these queries finish in a couple of seconds even when the constraint is not strong enough to justify using an index, as is the case of the first three rows of Table~\ref{table:ramps}, and in the case that the constraint is strong enough GIN indexes support such queries efficiently, as in the last row of Table~\ref{table:ramps}.
+Even though we supported such searches through our web interface, many such searches took more than a couple of minutes to perform within MongoDB, which caused our web front-end time out.
+In PostgreSQL, most of these queries finish in a couple of seconds, both when the number of results is not large enough to justify using an index (the first three rows of Table~\ref{table:ramps}), and when GIN indexes apply (the last row of Table~\ref{table:ramps}).
 \begin{table}[h!]
   \begin{center}
   \begin{tabular}{l|r|r|r}
@@ -281,7 +282,7 @@ $\#\{K: R_K \subset \{2, 3, 73\} \}$ & 0.1\% & 8min 11s & 170ms
 The significant improvement in indexless queries is indeed another considerable advantage of the transition to PostgreSQL.
 Such queries are relevant since non-typical queries can be the most interesting mathematically, and since it is impossible to construct all indexes in advance because the LMFDB offers the user a lot of freedom to select search parameters.
 We present two such examples in Table~\ref{table:indexless}, where the number of results is about 1000 in each case.
-We also note that both queries are instantaneous on a second run, as both databases relied on their caching systems on the second time.
+We also note that both queries are instantaneous on a second run, as both databases cached the results.
 
 \begin{table}[h!]
   \begin{center}
@@ -300,9 +301,9 @@ $\{E : \# \Sha = 4, \rank E = 1, \# E_{\text{torsion}} = 1\}$ & 1min 58s & 1.95s
 
 While search performance is vital for website usability, the process of uploading data and creating indexes is also essential to make the development sustainable and to aid in the implementation of new features.
 PostgreSQL's \texttt{COPY FROM} command allows for rapid importing of data from plain-text files without a Python intermediary, which is useful when the data is generated by some other system such as Magma~\cite{magma}.
-For example, we managed to import a 14398359 row table from 680GB text table in about 8 hours.
-With MongoDB we speculate that would have taken us a couple of days.
-Creating indexes in PostgreSQL is also dramatically faster than in MongoDB, approximately by order of magnitude.
+For example, we managed to import a 14398359 row table from a 680GB text file in about 8 hours.
+With MongoDB we estimate that would have taken us several days.
+Creating indexes in PostgreSQL is also dramatically faster than in MongoDB, approximately by an order of magnitude.
 Additionally, PostgreSQL offers numerous open source front-ends and administration tools~\cite{pgadmin,adminer} that lower the learning curve for the SQL language.
 The transition has substantially improved database management.
 
@@ -367,7 +368,7 @@ This feature decreased the size of indexes and improved their performance since 
 
 With the schemas created and export scripts written, the actual changeover of the data went reasonably smoothly.
 PostgreSQL provides a COPY FROM command to load data from a text file, which runs very quickly.
-After several false starts, exporting 400GB of data to text files took three or four days, copying it between servers on opposite sides of the Atlantic took less than a day and loading it into PostgreSQL took less than a day.
+After several false starts, exporting 400GB of data from MongoDB to text files took three or four days, copying it between servers on opposite sides of the Atlantic took less than a day and loading it into PostgreSQL took less than a day.
 
 Adapting the LMFDB codebase to use PostgreSQL took longer, and we are still finishing up a few bits of that part of the transition.
 The backend code for the LMFDB is written in Python, and the Python bindings for MongoDB and PostgreSQL take a very different approach.
@@ -376,7 +377,7 @@ Queries are performed by constructing dictionaries that specify the values of ce
 Psycopg~\cite{psycopg}, on the other hand, is a thin interface that offers the user the ability to execute SQL statements.
 Constructing queries using dictionaries worked well as a model for the LMFDB, since the search pages provided many inputs that could be processed independently into a dictionary.
 Moreover, we did not want to require LMFDB developers to learn SQL.
-We, therefore, implemented a high level interface to PostgreSQL that translated a dictionary-based query system similar to PyMongo's into SQL SELECT statements, while avoiding SQL injection attacks.
+We therefore implemented a high level interface to PostgreSQL that translated a dictionary-based query system similar to PyMongo's into SQL SELECT statements, while avoiding SQL injection attacks.
 
 \section{Benefits}
 
@@ -403,13 +404,13 @@ Before the database change, we had already begun the process of encapsulating th
 Each input box corresponds to a specific field or column in the database, and there is a processing function for each type of input (list of integers, floating point, etc.).
 As we switched each part of the LMFDB to PostgreSQL, we ensured that it was using these functions.
 
-Once these queries have been constructed, we need to execute the search and pass the results to the Jinja template that actually crafts the webpage seen by the user.
+Once these queries have been constructed, we need to execute the search and pass the results to the Jinja \cite{jinja} template that actually crafts the webpage seen by the user.
 Various parts of this task are shared among all sections of the LMFDB.
 For example, we have to be able to handle errors in user input, errors or timeouts in the execution of the query, and jump boxes that allow a user to go straight to an object with a particular label.
-As part of the switch to PostgreSQL, we created a \emph{search wrapper} that uniformly performs all of these jobs, and adopted it across the LMFDB.
+As part of the switch to PostgreSQL, we created a \emph{search wrapper} that performs all of these jobs, and adopted it across the LMFDB.
 In addition to simplifying the code overall, this change made the user experience more uniform and allowed for the creation of new features, which will be described in the next section.
 
-Many sections of the LMFDB had a statistics page prior to the database change.
+Many parts of the LMFDB had a statistics page prior to the database change.
 These pages described the number of objects with certain attributes; for example, a table of how many number fields were available by signature, or a table giving the fraction of elliptic curves with a specified torsion structure.
 Along with the database change, we created a class to support the database queries required for these statistics, and a common template to display them nicely.
 This change has the benefit that it automates the process for updating these counts when developers add data.
