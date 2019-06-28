@@ -25,7 +25,7 @@
 \newcommand{\subhead}[1]{\vspace{0.1in} \noindent \textbf{#1.}\ \ }
 
 %%% COMMENTS not addressed:
-% - add one or two sentencs to the introduction briefly explaining 
+% - add one or two sentences to the introduction briefly explaining 
 % why we were motivated to switch (which you explain in more detail 
 % later).
 % * I love the sound bite "Going forward, the ability to make connections 
@@ -56,12 +56,15 @@
 
 
 \begin{document}
-\title{On Mathematical Databases}
+\title{Zen and the Art of Database Maintenance}
 % Maintaining Mathematical Databases
 % Managing Mathematical Databases
-% Technical aspects of math db
-
-
+% Technical Aspects of Mathematical Databases
+% Zen and the Art of Database Maintenance
+% LMFDB: A Case Study in ....
+% Envisioning Computational Mathematics: ...
+% Everything You Wanted to Know about Mathematical Databases %% gives the sense of a help guide
+% A Tale of Two Databases
 
 
 
@@ -104,7 +107,9 @@ We divide this discussion into three parts: how to encode and manipulate the dat
 In each category, we present several options, along with a brief analysis of their pros and cons.
 
 The technical core of the article is the comparison of MongoDB and PostgreSQL, along with our experience in switching between them.
-We summarize the major differences, including the distinction between a relational database and a document-oriented database, and describe some of the features of each that were important in different stages of the LMFDB's history and that motivated the decision to switch.
+We were motivated to change systems primarily for performance reasons: many searches that we wanted to support were timing out on common inputs, and we didn't see a way to resolve the issue within MongoDB.
+A number of missing features in MongoDB also pushed us toward a 
+We summarize the major differences, including the distinction between a relational database and a document-oriented database, and describe some of the features of each that were important in different stages of the LMFDB's history.
 We also outline our process for both porting the data and updating the codebase to use a different system.
 
 We finish by highlighting some of the benefits provided by performing such a major structural change.
@@ -399,7 +404,7 @@ With the switch to PostgreSQL, we were able to use the numeric type instead, whi
 
 Since one of the goals of the switch was to improve performance, we made some changes to the schemas to help speed up queries.
 In particular, we split some of the largest tables in half, putting columns that were used for searching into a search table and columns that were only used for display into an \emph{extras table}.
-This significantly reduced the size of the search table, improving index efficiency, and speeding indexless queries that had to traverse the whole table.
+This significantly reduced the size of the search table, improving index efficiency, and speeding up indexless queries that had to traverse the whole table.
 A second optimization was only feasible because the data in the LMFDB changes very rarely, and because the search pages come with a standard order.
 Many tables are ordered lexicographically by four or five columns.
 We added a primary key column to each table, and for large tables we ordered this primary key by the default sort order for that table.
