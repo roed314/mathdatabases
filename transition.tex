@@ -24,31 +24,6 @@
 
 \newcommand{\subhead}[1]{\vspace{0.1in} \noindent \textbf{#1.}\ \ }
 
-%%% COMMENTS not addressed:
-% * I love the sound bite "Going forward, the ability to make connections 
-% between different kinds of mathematics is one of the core aims of the
-% LMFDB, and a relational database will help us achieve this goal."  If 
-% there was an easy way to say this earlier (possibly at the end of the 
-% intro, see my next commenet) I would do it.
-% 
-% * I think you could remove the first sentence on page 2 "We also outline 
-% our process..." without losing anything, but I might strengthen the last 
-% para of the intro by highlighting some realized benefits that you do not 
-% mention here but which are much more visible to the user than code 
-% refactoring/encapsulation (e.g. performance improvements, consistency 
-% checks)
-% 
-% * I would add a sentence to the end of the paper on page 11 noting the 
-% benefits of having automated consistency checks (e.g. "With this 
-% framework in place we were able to catch several data errors in recent 
-% updates to the new modular forms database that might have otherwise gone 
-% unnoticed.").  It kind of just tapers off into nothing as it stands.
-% 
-% 
-% page 9, lines 6-8, I would move the sentence starting "A second 
-% optimization was only feasible..." to the end of the para as "This 
-% optimization feasiable..."
-
 
 \begin{document}
 \title{Zen and the Art of Database Maintenance}
@@ -103,13 +78,14 @@ In each category, we present several options, along with a brief analysis of the
 
 The technical core of the article is the comparison of MongoDB and PostgreSQL, along with our experience in switching between them.
 We were motivated to change systems primarily for performance reasons: many searches that we wanted to support were timing out on common inputs, and we didn't see a way to resolve the issue within MongoDB.
-A number of missing features in MongoDB also pushed us toward a 
+A number of missing features in MongoDB also pushed us toward shifting: support for arbitrary precision integers and transactions that allow multiple commands to be rolled back if there is a failure.\footnote{MongoDB 4.0 added support for transactions but was released after we switched to PostgreSQL.}
 We summarize the major differences, including the distinction between a relational database and a document-oriented database, and describe some of the features of each that were important in different stages of the LMFDB's history.
 We also outline our process for both porting the data and updating the codebase to use a different system.
 
 We finish by highlighting some of the benefits provided by performing such a major structural change.
 For example, the process of rewriting a large amount of code allowed us to refactor and encapsulate many of the LMFDB's core functions.
-Moreover, these code changes enabled us to add new features and provided a better foundation for future improvements.
+Moreover, these code changes enabled us to dramatically improve performance and add new features, such as verification suites that check for consistency within the database.
+Going forward, the ability to make connections between different kinds of mathematics is one of the core aims of the LMFDB, and a relational database will help us achieve this goal.
 
 \section{Using databases in mathematics}
 
@@ -349,7 +325,6 @@ The transition has substantially improved database management.
 In addition to performance improvements, PostgreSQL makes new kinds of queries possible.
 Relational databases allow joining tables, returning values from both tables when they share some specified relationship.
 The existing schemas, having been designed for MongoDB, do not take advantage of this feature, but new tables on finite groups and on $p$-adic tori will.
-Going forward, the ability to make connections between different kinds of mathematics is one of the core aims of the LMFDB, and a relational database will help us achieve this goal.
 
 %\begin{itemize}
 %\item Have to specify a schema in PostgreSQL in advance.  This can be a hassle, but also can prevent errors (e.g. typos in column names, more complicated processing code because data isn't uniform)
@@ -400,7 +375,7 @@ With the switch to PostgreSQL, we were able to use the numeric type instead, whi
 Since one of the goals of the switch was to improve performance, we made some changes to the schemas to help speed up queries.
 In particular, we split some of the largest tables in half, putting columns that were used for searching into a search table and columns that were only used for display into an \emph{extras table}.
 This significantly reduced the size of the search table, improving index efficiency, and speeding up indexless queries that had to traverse the whole table.
-Query performance is also affected by sort order, and the default sorting on many tables is lexicographic by four or five columns.
+Query performance is also affected by sort order, and the default sorting on many tables uses four or five columns.
 We added a primary key column to each table, and for large tables we ordered this primary key by the table's standard order.
 This feature decreased the size of indexes and improved their performance since search results could be ordered by a single numeric column rather than a combination of many columns.
 This optimization was feasible because the data in the LMFDB changes infrequently, and because each search page comes with a default order.
@@ -462,7 +437,7 @@ In addition to the intrinsic benefits of using PostgreSQL, the transition has ea
 While many of these would have been possible using MongoDB, the improved abstraction made implementing them much more manageable.
 And some, such as dynamic statistics and verifications, rely on PostgreSQL's improved performance and the relational model.
 
-PostgreSQL supports transactions,\footnote{MongoDB 4.0 added support for transactions but was released after we switched to PostgreSQL.} allowing one to roll back to a functional earlier state if some later action fails.
+PostgreSQL supports transactions, allowing one to roll back to a functional earlier state if some later action fails.
 We have built these transactions into our interface layer, making it possible to safely modify rows in place, rather than creating a copy of the whole table when changes are made.
 
 The fact that all interactions with the database pass through our interface layer allows us to add custom logging.
