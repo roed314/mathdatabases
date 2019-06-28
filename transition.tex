@@ -51,7 +51,7 @@ Mathematics has a long history of using computations to aid in forming conjectur
 In the past few decades, computers have taken on a central role, both in performing many calculations and in hosting the results.
 As computational and storage capacity has increased, the size of these results has grown to the point where the task of searching and maintaining the data requires specialized knowledge.
 We discuss some of the challenges involved, as well as the main tools available to address them.
-We focus on one particular case study: the effort to migrate the \emph{$L$-functions and Modular Forms Database (LMFDB)}~\cite{lmfdb} from MongoDB~\cite{mongo} to PostgreSQL~\cite{postgres}.
+We focus on one particular case study: the effort to migrate the \emph{$L$-functions and Modular Forms Database} (LMFDB)~\cite{lmfdb} from MongoDB~\cite{mongo} to PostgreSQL~\cite{postgres}.
 
 We hope that this article will be useful to mathematicians hoping to create or improve their own databases; to database engineers who are considering switching from MongoDB to PostgreSQL; and to mathematicians participating in large software projects for whom some of the LMFDB's lessons might prove useful.
 
@@ -102,7 +102,7 @@ In this article, we limit our attention to the technical side of the job: from s
 The Langlands program, first formulated by Robert Langlands in the 1960s, is a set of widespread conjectures aimed at understanding and explaining the interconnections between a dizzying array of subfields of mathematics, including number theory, representation theory, algebraic geometry, and harmonic analysis---and in the 21st century its reach continues to expand.
 The Langlands program has been called ``one of the biggest ideas to come out of mathematics in the last fifty years'' and ``the Grand Unified Theory of mathematics''~\cite{frenkel}*{p. 3}.
 
-To provide compelling visual and computational displays of the Langlands program ``in action'', a database was created called the \emph{$L$-functions and Modular Forms Database (LMFDB)}, available at the website \url{http://www.lmfdb.org/}.
+To provide compelling visual and computational displays of the Langlands program ``in action'', a database was created called the \emph{$L$-functions and Modular Forms Database} (LMFDB), available at the website \url{http://www.lmfdb.org/}.
 The LMFDB was first conceived in 2007~\cite{cremona-16} and remains the object of a significant amount of ongoing work by over one hundred mathematicians~\cite{lmfdb}*{Acknowledgments}.
 
 The LMFDB hosts a variety of databases and connects them through the Langlands program; we recommend online experimentation or~\cite{cremona-16} for more details.
@@ -164,7 +164,7 @@ We now go through some of the options for how the user can interact with a datab
 \subhead{Direct access}
     The author may decide to provide direct access to the database.
     For example, the author may make the database files available through E-mail or a web page; or
-    allow direct read access to a database\todo{database->back end} server.
+    allow direct read access to an SQL server.
 
 \subhead{Computer algebra system}
     If the database is provided in a computer algebra system dependent files, these might evolve into being part of algebra system itself.
@@ -183,6 +183,7 @@ We now go through some of the options for how the user can interact with a datab
 \subsection{Hosting}
 
 Finally, we discuss some of the options regarding where to physically store the database.
+\todo{add one more sentence}
 
 \subhead{Personal hard-drive}
     This is one of the simplest options, as it has no initial set up cost.
@@ -368,7 +369,7 @@ Queries are performed by constructing dictionaries that specify the values of ce
 Psycopg~\cite{psycopg}, on the other hand, is a thin interface that offers the user the ability to execute SQL statements.
 Constructing queries using dictionaries worked well as a model for the LMFDB, since the search pages provided many inputs that could be processed independently into a dictionary.
 Moreover, we did not want to require LMFDB developers to learn SQL.
-We, therefore, implemented a high level interface to PostgreSQL that translated a dictionary-based query system similar to PyMongo's into SQL SELECT statements.
+We, therefore, implemented a high level interface to PostgreSQL that translated a dictionary-based query system similar to PyMongo's into SQL SELECT statements, while avoiding SQL injection attacks.
 
 \section{Benefits}
 
