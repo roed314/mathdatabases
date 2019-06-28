@@ -64,6 +64,14 @@ We next consider some of the major choices involved in setting up and maintainin
 We divide this discussion into three parts: how to encode and manipulate the data, how the user interacts with the database, and where the data is physically stored.
 In each category, we present several options along with a brief analysis of their pros and cons.
 
+The technical core of the article is the comparison of MongoDB and PostgreSQL, along with our experience in switching between them.
+We summarize the major differences, including the distinction between a relational database and a document-oriented database, and describe some of the features of each that were important in different stages of the LMFDB's history and that motivated the decision to switch.
+We also outline our process for both porting the data and updating the codebase to use a different system.
+
+We finish by highlighting some of the benefits provided by performing such a major structural change.
+For example, the process of rewriting a large amount of code allowed us to refactor and encapsulate many of the LMFDB's core functions.
+Moreover, these code changes enabled us to add new features and provided a better foundation for future improvements.
+
 \section{Using databases in mathematics}
 
 In order to put our work on the LMFDB on context, we give an overview of some other existing mathematical databases.
@@ -128,8 +136,7 @@ We will overview some of the possible options in each of these categories
 
 \subsection{Back End}
 
-We organize the options for how to encode the database in a machine readable format in terms of how easy it is to search for content.
-
+We organize the options for how to encode the database in a machine readable format by how easy it is to search for content.
 
 \subhead{Human readable files}
      Storing the data set in a human readable format, like a  plain text file or a comma-separated values file, is one of the most straightforward possible solutions.
@@ -158,8 +165,8 @@ We organize the options for how to encode the database in a machine readable for
 
 \subsection{Front End}
 
-We now go through some of the options for how the user can interact with a database.
-\todo{add one more sentence}
+There are many choices for how to enable a user to interact with data.
+Different options have varying degrees of accessibility and utility; we describe three possibilities below.
 
 \subhead{Direct access}
     The author may decide to provide direct access to the database.
@@ -182,8 +189,8 @@ We now go through some of the options for how the user can interact with a datab
 
 \subsection{Hosting}
 
-Finally, we discuss some of the options regarding where to physically store the database.
-\todo{add one more sentence}
+Finally, we discuss some of the options for where to physically store the database.
+We focus on how each possibility varies in terms of cost, ease of maintenance and scalability. 
 
 \subhead{Personal hard-drive}
     This is one of the simplest options, as it has no initial set up cost.
