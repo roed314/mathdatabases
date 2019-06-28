@@ -37,8 +37,10 @@
 \urladdr{\url{http://math.mit.edu/~roed/}}
 
 \begin{abstract}
+The last decade has seen a proliferation of online mathematical resources.
 We discuss some of the technical challenges involved in creating and maintaining a mathematical database.
-In particular, we report on the effort of the transition of the \emph{$L$-functions and Modular Forms Database} between two database systems.
+In particular, we report on the transition of the \emph{$L$-functions and Modular Forms Database} (LMFDB) between two database systems.
+We also highlight some of the improvements to the LMFDB that we have made as part of this transition.
 \end{abstract}
 
 \maketitle
@@ -51,8 +53,16 @@ As computational and storage capacity has increased, the size of these results h
 We discuss some of the challenges involved, as well as the main tools available to address them.
 We focus on one particular case study: the effort to migrate the \emph{$L$-functions and Modular Forms Database (LMFDB)}~\cite{lmfdb} from MongoDB~\cite{mongo} to PostgreSQL~\cite{postgres}.
 
+We hope that this article will be useful to mathematicians hoping to create or improve their own databases; to database engineers who are considering switching from MongoDB to PostgreSQL; and to mathematicians participating in large software projects for whom some of the LMFDB's lessons might prove useful.
 
-We hope that this article will be useful to mathematicians hoping to create their own databases; to database engineers who are considering switching from MongoDB to PostgreSQL; and to mathematicians participating in large software projects for whom some of the LMFDB's lessons might prove useful.
+We begin with a survey of existing mathematical databases in order to highlight the diversity of approaches taken to disseminating mathematical data.
+While some focus on communicating theorems and propositions, we pay more attention to those which center on examples.
+Among these, we observe a range of search functionality.
+Since the LMFDB prioritizes the ability to search by properties of each object, we hope that our experience working with MongoDB and PostgreSQL will help other mathematical resources improve their capabilities in this area.
+
+We next consider some of the major choices involved in setting up and maintaining such a database.
+We divide this discussion into three parts: how to encode and manipulate the data, how the user interacts with the database, and where the data is physically stored.
+In each category, we present several options along with a brief analysis of their pros and cons.
 
 \section{Using databases in mathematics}
 
@@ -74,7 +84,7 @@ which allows a user to perform further computations with the objects in the data
 Others are available online in various formats; we will discuss different methods of data distribution in Section~\ref{sec:nutsbolts}.
 
 Collecting a large number of examples into one database makes possible a valuable paradigm for experimental mathematics: the ability to search through examples for a few that have particular specific desired properties or are counterexamples to a conjecture.
-In addition to the LMFDB, a number of other mathematical databases also have search functionality as one of their core features \citelist{\cite{umrk} \cite{findstat} \cite{oeis} \cite{isc} \cite{cydata}}.
+In addition to the LMFDB, a number of other mathematical databases also have search functionality as one of their core features \citelist{\cite{umrk} \cite{findstat} \cite{oeis} \cite{isc} \cite{cydata} \cite{hog} \cite{knotinfo}}.
 Searching requires a more substantial infrastructure than is needed for just displaying data; the discussion in Section \ref{sec:MvsP} highlights some of the factors to consider when choosing a search engine.
 
 A final role played by many online mathematical databases is to provide domain-specific exposition surrounding the examples that they host \citelist{\cite{primepages} \cite{graphclasses} \cite{complexityzoo} \cite{cantorsattic} \cite{findstat} \cite{knotinfo}}.
