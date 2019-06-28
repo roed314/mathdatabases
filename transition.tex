@@ -25,9 +25,6 @@
 \newcommand{\subhead}[1]{\vspace{0.1in} \noindent \textbf{#1.}\ \ }
 
 %%% COMMENTS not addressed:
-% - add one or two sentences to the introduction briefly explaining 
-% why we were motivated to switch (which you explain in more detail 
-% later).
 % * I love the sound bite "Going forward, the ability to make connections 
 % between different kinds of mathematics is one of the core aims of the
 % LMFDB, and a relational database will help us achieve this goal."  If 
@@ -51,8 +48,6 @@
 % page 9, lines 6-8, I would move the sentence starting "A second 
 % optimization was only feasible..." to the end of the para as "This 
 % optimization feasiable..."
-%
-% Wording on the second paragrah of "Using databases in mathematics"
 
 
 \begin{document}
@@ -405,10 +400,10 @@ With the switch to PostgreSQL, we were able to use the numeric type instead, whi
 Since one of the goals of the switch was to improve performance, we made some changes to the schemas to help speed up queries.
 In particular, we split some of the largest tables in half, putting columns that were used for searching into a search table and columns that were only used for display into an \emph{extras table}.
 This significantly reduced the size of the search table, improving index efficiency, and speeding up indexless queries that had to traverse the whole table.
-A second optimization was only feasible because the data in the LMFDB changes very rarely, and because the search pages come with a standard order.
-Many tables are ordered lexicographically by four or five columns.
-We added a primary key column to each table, and for large tables we ordered this primary key by the default sort order for that table.
+Query performance is also affected by sort order, and the default sorting on many tables is lexicographic by four or five columns.
+We added a primary key column to each table, and for large tables we ordered this primary key by the table's standard order.
 This feature decreased the size of indexes and improved their performance since search results could be ordered by a single numeric column rather than a combination of many columns.
+This optimization was feasible because the data in the LMFDB changes infrequently, and because each search page comes with a default order.
 
 With the schemas created and export scripts written, the actual changeover of the data went reasonably smoothly.
 PostgreSQL provides a COPY FROM command to load data from a text file, which runs very quickly.
