@@ -77,7 +77,7 @@ We divide this discussion into three parts: how to encode and manipulate the dat
 In each category, we present several options, along with a brief analysis of their pros and cons.
 
 The technical core of the article is the comparison of MongoDB and PostgreSQL, along with our experience in switching between them.
-We were motivated to change systems primarily for performance reasons: many searches that we wanted to support were timing out on common inputs, and we didn't see a way to resolve the issue within MongoDB.
+We were motivated to change systems primarily for performance reasons: many searches that we wanted to support stalled on common inputs, and we didn't see a way to resolve the issue within MongoDB.
 A number of missing features in MongoDB also pushed us toward shifting: support for arbitrary precision integers and transactions that allow multiple commands to be rolled back if there is a failure.\footnote{MongoDB 4.0 added support for transactions but was released after we switched to PostgreSQL.}
 We summarize the major differences, including the distinction between a relational database and a document-oriented database, and describe some of the features of each that were important in different stages of the LMFDB's history.
 We also outline our process for both porting the data and updating the codebase to use a different system.
