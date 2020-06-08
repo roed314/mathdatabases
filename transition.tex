@@ -122,6 +122,9 @@ There are numerous examples of projects that are no longer accessible because th
 Projects have various ways of reaching out to potential developers, ranging from academic workshops and conferences, to the standard open source tools such as GitHub~\cite{github}, to forms allowing users to easily submit data \cites{findstat, hog, oeis}.
 In this article, we limit our attention to the technical side of the job: from setting up hosting servers, to the different options for database software, to details on how the LMFDB functions.
 
+
+
+
 \subsection{The LMFDB project}
 The Langlands program, first formulated by Robert Langlands in the 1960s, is a set of widespread conjectures aimed at understanding and explaining the interconnections between a dizzying array of subfields of mathematics, including number theory, representation theory, algebraic geometry, and harmonic analysis---and in the 21st century its reach continues to expand.
 The Langlands program has been called ``one of the biggest ideas to come out of mathematics in the last fifty years'' and ``the Grand Unified Theory of mathematics''~\cite{frenkel}*{p. 3}.
@@ -130,10 +133,7 @@ To provide compelling visual and computational displays of the Langlands program
 The LMFDB was first conceived in 2007~\cite{cremona-16} and remains the object of a significant amount of ongoing work by over one hundred mathematicians~\cite{lmfdb}*{Acknowledgments}.
 
 The LMFDB hosts a variety of databases and connects them through the Langlands program; we recommend online experimentation or~\cite{cremona-16} for more details.
-
-
-\section{Nuts and bolts}
-\label{sec:nutsbolts}
+Including some that predated the project\todo{add references}.
 \todoinline{R1: the discussion of other approaches does not reference
 prior/on-going efforts by people involved in the LMFDB project.  The
 Cremona database of elliptic curves over Q, the Jones-Roberts local field
@@ -141,6 +141,11 @@ database, the number field tables hosted by the pari project, the
 Jones-Roberts number field database.  It is possible the authors are
 intentionally avoiding a discussion of these means of distributing number
 theoretic data, but they give examples which could be mentioned here.}
+
+
+\section{Nuts and bolts}
+\label{sec:nutsbolts}
+
 
 When it comes to hosting a mathematical database, there are a wide range of options available.
 Until the last several decades, the only choice was to use a print format, for example in a book or an article, and rely on a publisher to distribute its content and to make it available to the rest of scientific community.
@@ -214,7 +219,8 @@ looking at the raw data.}
 \subhead{Computer algebra system}
     If the database is provided in a computer algebra system dependent files, these might evolve into being part of algebra system itself.
     For example, Small Groups Library~\cite{smallgroups} available in GAP or the K3 Database in Magma~\cite{magmadb}.
-    This option is extremely convenient for the user of those software systems, however, this is not suitable for very large databases, as these would increase the size of the computer algebra system in question.
+    This option is extremely convenient for the user of those software systems, however, this is not optimal for very large databases, as these would increase the size of the computer algebra system in question.
+    \todo{mention optional databases}
 
 \subhead{Website}
 \todoinline{R2: Seems like the website section should be split into static versus dynamic. There are many examples of each type in the world and they have different pros/cons and require quite different requirements from the developer to set-up.}
@@ -234,6 +240,8 @@ looking at the raw data.}
 out in the webpage (i.e., no database behind it)                                        \\
 (d) web framework: is this for storing the database or the front-end?                   \\
 }
+\todoinline{not every combination is valid}
+\todoinline{Add note saying that front-end and back-end do not need to be hosted in the same device}
 
 Finally, we discuss some of the options for where to physically store the database.
 We focus on how each possibility varies in terms of cost, ease of maintenance and scalability. 
@@ -274,6 +282,7 @@ As a relational database, PostgreSQL stores data in a structured way, where the 
 
 \subsection{Comparing two database systems}
 \todoinline{R2: Why did you write your own and not use any of the existing migration tools?}
+\todoinline{many workarounds around MongoDB limitations in its early stages imputed limitations on using an existing tool to automatically migrate the data between MongoDB and PostgresSQL}
 
 MongoDB and PostgreSQL offer two different database paradigms.
 MongoDB, as a document-oriented database, is meant to facilitate the storage of unstructured data, where the fields and types present in each document can vary within a collection.
