@@ -7,6 +7,7 @@
 \usepackage{enumerate}
 \usepackage{enumitem}
 \usepackage{colonequals}
+\usepackage{numprint}
 
 \usepackage{footnote}
 \makesavenoteenv{tabular}
@@ -65,7 +66,7 @@ As computational and storage capacity has increased, the size of these results h
 We discuss some of the challenges involved, as well as the main tools available to address them.
 We focus on one particular case study: the effort to migrate the database system supporting \emph{$L$-functions and Modular Forms Database} (LMFDB)~\cite{lmfdb} from MongoDB~\cite{mongo} to PostgreSQL~\cite{postgres}
 
-We hope that this article will be useful to mathematicians aspiring to create or improve their own databases; to database engineers who are considering switching from MongoDB to PostgreSQL, and to mathematicians participating in large software projects for whom some of the LMFDB's lessons might prove useful.
+We hope that this article will be useful to mathematicians aspiring to create or improve their own databases, to database engineers who are considering switching from MongoDB to PostgreSQL, and to mathematicians participating in large software projects for whom some of the LMFDB's lessons might prove useful.
 
 We begin with a survey of existing mathematical databases in order to highlight the diversity of approaches taken to disseminating mathematical data.
 While some focus on communicating theorems and propositions, we pay more attention to those which center on examples.
@@ -93,7 +94,7 @@ In order to put our work on the LMFDB in context, we give an overview of some ot
 
 We will be primarily interested in datasets consisting of information on mathematical objects, such as specific number fields, graphs or curves, rather than on mathematical statements.
 There are many valuable resources focusing on theorems and propositions, from general encyclopedias such as the Encyclopedia of Mathematics~\cite{encofmath} and Mathworld~\cite{mathworld} to the preprint server arXiv~\cite{arxiv} to numerous domain specific references \cites{groupprops, graphclasses, complexityzoo}.
-However, the design imperatives for such projects favor a different type of databases than the ones we are interested in.
+However, the design imperatives for such projects favor a different type of database than the ones we are interested in.
 Since the content of theorem-oriented sites is likely to be textual, the standard tools for internet searching such as Google tend to work effectively.
 Moreover, because humans are directly creating the content, the tools for inputting and managing data are different.
 Wiki \cites{cantorsattic, complexityzoo, groupprops, knotatlas} and blog \cite{fanosearch} software is often used to make it easier for many users to be involved in content creation.
@@ -133,12 +134,19 @@ The LMFDB hosts a variety of databases and connects them through the Langlands p
 
 \section{Nuts and bolts}
 \label{sec:nutsbolts}
+\todoinline{R1: the discussion of other approaches does not reference
+prior/on-going efforts by people involved in the LMFDB project.  The
+Cremona database of elliptic curves over Q, the Jones-Roberts local field
+database, the number field tables hosted by the pari project, the
+Jones-Roberts number field database.  It is possible the authors are
+intentionally avoiding a discussion of these means of distributing number
+theoretic data, but they give examples which could be mentioned here.}
 
 When it comes to hosting a mathematical database, there are a wide range of options available.
 Until the last several decades, the only choice was to use a print format, for example in a book or an article, and rely on a publisher to distribute its content and to make it available to the rest of scientific community.
 Since the publisher takes care of most of the technical issues, this method offers the benefit of simplicity to the author, but distribution in print provides a number of disadvantages compared to digital distribution via the internet.
 For instance, the act of publishing through print is a lengthy process, and the data is less immediately accessible than online distribution, putting barriers in the way of the database user.
-Furthermore, once the data is published is extremely difficult to address  mistakes, add new data or features.
+Furthermore, once the data is published it is extremely difficult to address  mistakes, add new data or features.
 
 On the other hand, given that the digital distribution of mathematical data is not taken on by publishers, authors have many more choices to make.
 We break down these choices into the following related categories:
@@ -150,6 +158,7 @@ We break down these choices into the following related categories:
 We will overview some of the possible options in each of these categories
 
 \subsection{Back End}
+\todoinline{R2: (3) I found section 3.1 a little weird in the choice of categories}
 
 We organize the options for how to encode the database in a machine readable format by how easy it is to search for content.
 
@@ -157,6 +166,9 @@ We organize the options for how to encode the database in a machine readable for
      Storing the data set in a human readable format, like a  plain text file or a comma-separated values file, is one of the most straightforward possible solutions.
      It does not require special software to access the data, very similar to a table in print.
     However, it can be cumbersome and impractical to search or manipulate the data without additional tools.
+    \todoinline{R2: Didn't mention one of the more serious issues with print: the sheer volume
+of paper it would take to print out the LMFDB is beyond impractical. }
+\todoinline{R2: Sure csv counts as “human readable” but so does JSON. I think this category really seems to be about data without any sort of front-end for which you have to actually look through the data manually to find anything, i.e. data that is “meant to be read by humans” more so than the format being readable by humans. For small data sets, that is possible.}
 
 \subhead{Application dependent files}
     A more advanced solution is to store the dataset in an application dependent format.
@@ -165,8 +177,16 @@ We organize the options for how to encode the database in a machine readable for
     For example, using SageMath pickles makes it easy to load the data into an active SageMath session.
     However, the dataset will not likely be efficiently searchable, and most content searches would need to loop over every item in the dataset (a sequential search).
     Moreover, specialized data formats are vulnerable to backward-incompatible changes in the software used to load them.
+    \todoinline{R1:
+the authors make the point that
+databases used by computer algebra systems are not large.  But magma has
+some optional databases which are quite large (
+http://magma.maths.usyd.edu.au/magma/download/db/ lists a couple which go
+over a gigabyte)}
+    \todoinline{R2: (application dependent). I also disagree with some of the discussion here. Just because it is in an application specific format does not mean that it is not effi- ciently searchable. It depends entirely on how well the custom data format was implemented. The real issue here seems to be a lack of compatibility and long term maintainability.}
 
 \subhead{Database structure}
+\todoinline{R2: (database structure) “Database” and “optimized for searching” are not synony- mous to me. Yes, indexes are a natural part of a database format, but if the index is not indexing the “right’ things then the searches are still terrible. If fact, isn’t the whole issue with switching from MongoDB to PostgreSQL was that MongoDB was not optimized for the searches you were trying to perform. I think the key here is longterm stability and compatibility and the many existing tools already developed both for searching and administrating.}
     Finally, one may store the dataset in a database format, i.e. in a format optimized for searching.
     As above, such a solution will require additional software for users to manipulate the data, but the data formats are more stable in practice since database software is widely used beyond mathematics.
     There are many types of database available; in this article, we will focus on two:
@@ -185,16 +205,19 @@ There are many choices for how to enable a user to interact with data.
 Different options have varying degrees of accessibility and utility; we describe three possibilities below.
 
 \subhead{Direct access}
+\todoinline{R2: “direct access” to me really sounds like the “no front end” case. You are simply
+looking at the raw data.}
     The author may decide to provide direct access to the database.
     For example, the author may make the database files available through email or a webpage; or
-    allow direct read access to an SQL server \cite{umrk}.
+    allow direct read access to a SQL server \cite{umrk}.
 
 \subhead{Computer algebra system}
     If the database is provided in a computer algebra system dependent files, these might evolve into being part of algebra system itself.
     For example, Small Groups Library~\cite{smallgroups} available in GAP or the K3 Database in Magma~\cite{magmadb}.
-    This option is extremely convenient for the user, however, this is not suitable for very large databases, as these would increase the size of the computer algebra system in question.
+    This option is extremely convenient for the user of those software systems, however, this is not suitable for very large databases, as these would increase the size of the computer algebra system in question.
 
 \subhead{Website}
+\todoinline{R2: Seems like the website section should be split into static versus dynamic. There are many examples of each type in the world and they have different pros/cons and require quite different requirements from the developer to set-up.}
     The user may also interact with the database through a collection of web pages displaying the data.
     These web pages can range widely in complexity.
     For example, one can manually curate each page individually \cites{cantorsattic, fanosearch} or automatically generate them as static web pages \cites{etc, graphclasses, SyzygyData, knotinfo, groupnames}.
@@ -204,6 +227,13 @@ Different options have varying degrees of accessibility and utility; we describe
     Other examples of mathematical databases using such an approach include \cites{knotatlas, hog}.
 
 \subsection{Hosting}
+\todoinline{R2:  Seems like this section could be split up into front-end hosting versus database hosting. Surprisingly there was no discussion of the MongoDB hosting or AWS hosting pros/cons, or any of other major hosting resources/services.
+(a) It seems like the authors are confusing hosting the data with hosting the front-end.\\
+(b) Personal hard-drive: The accessibility of this data depends on the accessibility of \\the front end, not where the data is actually stored. Missed a major con of the front end utilizing the resources of your personal machine and exposing it to security risks.                                                                         \\
+(c) Personal webpage is only a host if it is static web-page with all the data written  \\
+out in the webpage (i.e., no database behind it)                                        \\
+(d) web framework: is this for storing the database or the front-end?                   \\
+}
 
 Finally, we discuss some of the options for where to physically store the database.
 We focus on how each possibility varies in terms of cost, ease of maintenance and scalability. 
@@ -239,10 +269,11 @@ In 2009, when MongoDB was initially released as an open source project, it prese
 As a document-oriented database, where each document was stored independently in a JSON-like format, it did not require a schema, a boon when creating new collections of mathematical objects where the data requirements only gradually became clear.
 Moreover, Python bindings were available, a language that many computational number theorists were familiar with due to its use in SageMath.
 This setup worked well for many years; however, as the LMFDB grew, various shortcomings of using a non-relational database became more evident.
-Over the last year, we have transitioned from MongoDB to PostgreSQL, a popular open source implementation of the SQL language that grew out of earlier projects founded in the 1970s and 80s.
+Over the last year\todo{R2: specify the year}, we have transitioned from MongoDB to PostgreSQL, a popular open source implementation of the SQL language that grew out of earlier projects founded in the 1970s and 80s.
 As a relational database, PostgreSQL stores data in a structured way, where the data is organized in tables, and each table has a specified schema, i.e., each row must have the same layout, with the types of columns constant across all rows.
 
 \subsection{Comparing two database systems}
+\todoinline{R2: Why did you write your own and not use any of the existing migration tools?}
 
 MongoDB and PostgreSQL offer two different database paradigms.
 MongoDB, as a document-oriented database, is meant to facilitate the storage of unstructured data, where the fields and types present in each document can vary within a collection.
@@ -268,7 +299,8 @@ In addition to the space benefits, the switch to PostgreSQL also relaxes the pre
 The second factor contributing to space savings is PostgreSQL's support for arbitrary precision integers.
 As a mathematical database, the LMFDB frequently uses large integers which had to be stored as strings in MongoDB.
 In addition to the storage consequences, various workarounds were required to sort and search the data correctly.
-The elimination of these hacks has simplified a lot of the supporting code.
+The elimination of these hacks has simplified some of the supporting code.
+\todoinline{R2:  By choosing “database” format you automatically have indexes. You also seem to say the Mon- goDB and PostgreSQL use the same type of binary tree based indexes, but do not mention why PostgreSQL is so much faster. If I were someone writing my own data- base it seems like you are saying to use PostgreSQL if at all possible (i.e., if I don’t really need a huge number of different document types). Again table of pros/cons would be helpful here.}
 
 While smaller tables help with query performance, indexes provide a more powerful tool for speeding up searches.
 Indexes facilitate the location of records with constraints on a specified set of columns by storing additional data.
@@ -277,7 +309,10 @@ For example, both MongoDB and PostgreSQL support indexes based on binary trees, 
 However, there is another query type that is not well supported by binary trees: given a column representing a set of integers, search for rows that contain a particular set, or are contained in a particular set.
 For example, we store the set of ramified primes $R_K$ for number fields $K$, and we want to be able to search on number fields by specifying such constraints on $R_K$.
 Even though we supported such searches through our web interface, many such searches took more than a couple of minutes to perform within MongoDB, which caused our web front end to timeout.
-In PostgreSQL, most of these queries finish in a couple of seconds, both when the number of results is not large enough to justify using an index (the first three rows of Table~\ref{table:ramps}), and when generalized inverted index (GIN)\cite{gin} indexes apply (the last row of Table~\ref{table:ramps}).
+In PostgreSQL, most of these queries finish in a couple of seconds, both when the number of results is not large enough to justify using an index (the first three rows of Table~\ref{table:ramps}), and when generalized inverted indexes (GIN)~\cite{gin} apply (the last row of Table~\ref{table:ramps}).
+\todoinline{R1: The queries should be explained, that the
+first is for number fields (then it is clear), and that the second is for
+elliptic curves over Q, which is otherwise not explained.}
 \begin{table}[h!]
   \begin{center}
   \begin{tabular}{l|r|r|r}
@@ -298,6 +333,7 @@ The significant improvement in indexless queries is another considerable advanta
 Such queries are relevant, since non-typical queries can be the most interesting mathematically, and since it is impossible to construct all indexes in advance because the LMFDB offers the user a lot of freedom to select search parameters.
 We present two such examples in Table~\ref{table:indexless}, where the number of results is about 1000 in each case.
 We also note that both queries are instantaneous on a second run, as both databases cached the results.
+\todoinline{R2: So what if they cache? Isn’t this something that is configurable by the admin? If you are going to talk about caching, then I would be interested in: How long is the cache stored? Is the cache stored across users? What are the pros/cons of different caching settings?}
 
 \begin{table}[h!]
   \begin{center}
@@ -316,10 +352,10 @@ $\{E : \# \Sha = 4, \rank E = 1, \# E_{\text{torsion}} = 1\}$ & 1min 58s & 1.95s
 
 While search performance is vital for website usability, the process of uploading data and creating indexes is also essential to make the development sustainable and to aid in the implementation of new features.
 PostgreSQL's \texttt{COPY FROM} command allows for rapid importing of data from plain-text files without a Python intermediary, which is useful when the data is generated by some other system such as Magma~\cite{magma}.
-For example, we managed to import a 14398359 row table from a 680GB text file in about 8 hours.
+For example, we imported a \numprint{14398359} row table from a 680GB text file in about 8 hours.
 With MongoDB we estimate that would have taken us several days.
 Creating indexes in PostgreSQL is also dramatically faster than in MongoDB, approximately by an order of magnitude.
-Additionally, PostgreSQL offers numerous open source front ends and administration tools~\cite{pgadmin,adminer} that lower the learning curve for the SQL language.
+Additionally, PostgreSQL offers numerous open source front ends and administration tools~\cite{pgadmin,adminer} that lower the learning curve for the SQL language.\todo{R2: MongoDB has numerous open source admin tools as well. Why are the PostgreSQL tools better?}
 The transition has substantially improved database management.
 
 In addition to performance improvements, PostgreSQL makes new kinds of queries possible.
@@ -384,7 +420,7 @@ With the schemas created and export scripts written, the actual changeover of th
 PostgreSQL provides a COPY FROM command to load data from a text file, which runs very quickly.
 After several false starts, exporting 400GB of data from MongoDB to text files took three or four days, copying it between servers on opposite sides of the Atlantic took less than a day and loading it into PostgreSQL took less than a day.
 
-Adapting the LMFDB codebase to use PostgreSQL took longer, and we are still finishing up a few bits of that part of the transition.
+Adapting the LMFDB codebase to use PostgreSQL took longer, and we are still finishing up a few bits of that part of the transition.\todo{Still finishing up as of when? This really needs a date as that comment will quickly become out of date in a publication.}
 The backend code for the LMFDB is written in Python, and the Python bindings for MongoDB and PostgreSQL take a very different approach.
 PyMongo~\cite{pymongo} offers a high level interface to the database that integrates python data structures.
 Queries are performed by constructing dictionaries that specify the values of certain columns and have special keys for adding more complicated constraints such as inequalities or boolean combinations of conditions.
@@ -392,6 +428,7 @@ Psycopg~\cite{psycopg}, on the other hand, is a thin interface that offers the u
 Constructing queries using dictionaries worked well as a model for the LMFDB, since the search pages provided many inputs that could be processed independently into a dictionary.
 Moreover, we did not want to require LMFDB developers to learn SQL.
 We therefore implemented a high level interface to PostgreSQL that translated a dictionary-based query system similar to PyMongo's into SQL SELECT statements, while avoiding SQL injection attacks.
+\todoinline{R2: Is your PostgreSQL query interface being made available as a stand-alone tool or only within the LMFDB?}
 
 \section{Benefits}
 
@@ -400,7 +437,7 @@ We therefore implemented a high level interface to PostgreSQL that translated a 
 As the LMFDB has grown, the most common paradigm for adding new features has been to take a functional section of the website, copy it to a new folder, and modify the templates and backend code.
 This approach has the benefit of easily producing valid code, since one is iteratively making small changes to an already functional webpage.
 However, it leads to large quantities of repeated code, which make fixing bugs and adding features much harder, since the same change must be applied in dozens of locations.
-The standard solution is to encapsulate tasks into functions, that can then be used repeatedly and changed at need.
+The standard solution is to encapsulate tasks into functions, that can then be used repeatedly and changed as needed.
 Of course, the LMFDB has used functions like this since the beginning, but often these functions are not written in a way that allows them to be used in multiple sections of the website.
 
 The task of switching from MongoDB to PostgreSQL was made more difficult by this low level of abstraction, but it also presented an opportunity.
@@ -410,6 +447,12 @@ We highlight three in particular to illustrate the kinds of encapsulation that a
 We centralized many of the scripts used to upload data into a suite of data management tools.
 There is now a single object available from the Sage command line that has methods for performing a variety of tasks: creating new tables and modifying existing schemas, copying data to and from text files, moving data between the beta and production versions of the database, accessing PostgreSQL's tools for analyzing slow queries, adding indexes and constraints, and tracking statistics as data is changed.
 The centralization of these tasks allows us to reduce code duplication and to use best practices in handling errors.
+\todoinline{R1: 
+this cites the new mechanism for generating statistics pages and
+gives the impression that it is widely used, but I don't think that is the
+case.  Many areas do not have statistics pages, and some have it but do not
+use the new approach
+}
 
 Each section of the LMFDB has a search page, where users can input constraints they would like their curve, field or group to satisfy.
 Some input boxes require an integer or list of integers; others need a label string in a particular format; others a rational number.
@@ -454,15 +497,39 @@ We hope that this feature will provide researchers with a new method of interact
 Many browse pages in the LMFDB already had a link to view a random object.
 Because of the new search wrapper abstraction, it was easy to add the ability to return a random object satisfying a search query.
 This feature saves time when browsing since it allows you to more quickly reach the homepage of an object satisfying a particular constraint, such as CM elliptic curve or a weight one modular form.
+\todoinline{R1: this is on an improved version of "random object", and may
+give the impression that the new version is used universally, but I don't
+think many parts of the LMFDB have this feature\\
+Edgar: This has been addressed}
 
 During the transition to PostgreSQL, we modified the search results pages so that they do not always provide the total count.
 The count is provided only if it is sufficiently small or has already been cached (though it is available in every case if requested).
-This change dramatically improved response times in some cases, where a large number of results made finding the first few much easier than counting them all.
+This change dramatically improved response times in some cases, where a large number of results makes finding the first few much easier than counting them all.
 
 Mathematical data differ from data in most other applications because it has a notion of correctness that can be checked, rather than just providing a record of a real-world measurement.
 Some of these verifications are internal, such as checking that the defining polynomial of a number field is irreducible or that the trace of a modular form is zero at each inert prime not dividing the level.
 Others rely on connections with other tables in the database, such as checking that invariants matchup between an elliptic curve and its corresponding modular form.
 The switch to PostgreSQL made it possible to create a framework to write such consistency checks and run them whenever new data is added.
+\todoinline{R1: 
+I am not sure that there are internal verifications done that
+defining polynomials of number fields are irreducible.  The second example
+in the sentence on the trace of a modular form is unclear.  There are many
+types of modular forms, and different ways a number field might be
+associated to one (needed to interpret "inert prime").  I can infer what
+they mean, but not all readers would be able to.\\
+  The point is that one can write small programs to check for
+consistency in the data and that PostgreSQL makes this easier.  But, I
+don't think they justify why this is easier with PostgreSQL.  If one knows
+how the data is stored for say elliptic curves over Q and for weight 2
+newforms defined over Q, I think writing a program to check for consistency
+would be easy with either type of database.  My point is that if doing this
+is much easier with PostgreSQL, it needs to be explained. \\
+The final paragraph seemed like an awkward end -- that it would be
+better with a brief conclusion.  I realize this would just be repeating
+some of the earlier points, but the article is expository, so a conclusion
+seems natural.  It would not have to be long; a single paragraph would
+suffice.
+}
 
 \bibliography{biblio}
 
