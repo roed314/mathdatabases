@@ -330,7 +330,7 @@ The significant improvement in indexless queries is another considerable advanta
 Such queries are relevant, since non-typical queries can be the most interesting mathematically, and since it is impossible to construct all indexes in advance because the LMFDB offers the user a lot of freedom to select search parameters.
 We present two such examples in Table~\ref{table:indexless} (the first for number fields and the second for elliptic curves), where the number of results is about 1000 in each case.
 We also note that both queries are instantaneous on a second run, as both databases cached the results.
-\todoinline{R2: So what if they cache? Isn't this something that is configurable by the admin? If you are going to talk about caching, then I would be interested in: How long is the cache stored? Is the cache stored across users? What are the pros/cons of different caching settings?}
+However, this speedup is not as useful for the LMFDB as for some applications, since a mathematically interesting query is unlikely to be a duplicate of one run previously.
 
 \begin{table}[h!]
   \begin{center}
