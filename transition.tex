@@ -310,6 +310,7 @@ As a mathematical database, the LMFDB frequently uses large integers which had t
 In addition to the storage consequences, various workarounds were required to sort and search the data correctly.
 The elimination of these hacks has simplified some of the supporting code.
 \todoinline{R2:  By choosing “database” format you automatically have indexes. You also seem to say the Mon- goDB and PostgreSQL use the same type of binary tree based indexes, but do not mention why PostgreSQL is so much faster. If I were someone writing my own data- base it seems like you are saying to use PostgreSQL if at all possible (i.e., if I don’t really need a huge number of different document types). Again table of pros/cons would be helpful here.}
+\todoinline{mention that MongoDB and PostgreSQL are optimised for two different data sets}
 
 While smaller tables help with query performance, indexes provide a more powerful tool for speeding up searches.
 Indexes facilitate the location of records with constraints on a specified set of columns by storing additional data.
@@ -438,6 +439,7 @@ Constructing queries using dictionaries worked well as a model for the LMFDB, si
 Moreover, we did not want to require LMFDB developers to learn SQL.
 We therefore implemented a high level interface to PostgreSQL that translated a dictionary-based query system similar to PyMongo's into SQL SELECT statements, while avoiding SQL injection attacks.
 \todoinline{R2: Is your PostgreSQL query interface being made available as a stand-alone tool or only within the LMFDB?}
+\todoinline{Mention that we plan to make it a stand-alone tool, and it already helped with other projects}
 
 \section{Benefits}
 
