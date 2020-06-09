@@ -1,0 +1,5 @@
+- reworded and reorganized various parts of section 3.
+- we added a couple more information regarding other databases prior/on-going efforts by people involved in the LMFDB project
+- we decided not expand on the caching remark, but we remarked why this is not so relevant for the ongoing discussion
+- expanded a bit more on the abstraction layer, and it has been useful in other projects
+- some of the features that 

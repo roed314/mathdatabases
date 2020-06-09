@@ -78,7 +78,7 @@ We divide this discussion into three parts: how to encode and manipulate the dat
 In each category, we present several options, along with a brief analysis of their pros and cons.
 
 The technical core of the article is the comparison of MongoDB and PostgreSQL, along with our experience in switching between them.
-We were motivated to change systems primarily for performance reasons: many searches that we wanted to support stalled on common inputs, and we didn't see a way to resolve the issue within MongoDB.
+We were motivated to change systems primarily for performance reasons: many searches that we wanted to support stalled on common inputs, and we did not see a way to resolve the issue within MongoDB.
 A number of missing features in MongoDB also pushed us toward shifting: support for arbitrary precision integers and transactions that allow multiple commands to be rolled back if there is a failure.\footnote{MongoDB 4.0 added support for transactions but was released after we switched to PostgreSQL.}
 We summarize the major differences, including the distinction between a relational database and a document-oriented database, and describe some of the features of each that were important in different stages of the LMFDB's history.
 We also outline our process for both porting the data and updating the codebase to use a different system.
@@ -445,12 +445,6 @@ We highlight three in particular to illustrate the kinds of encapsulation that a
 We centralized many of the scripts used to upload data into a suite of data management tools.
 There is now a single object available from the Sage command line that has methods for performing a variety of tasks: creating new tables and modifying existing schemas, copying data to and from text files, moving data between the beta and production versions of the database, accessing PostgreSQL's tools for analyzing slow queries, adding indexes and constraints, and tracking statistics as data is changed.
 The centralization of these tasks allows us to reduce code duplication and to use best practices in handling errors.
-\todoinline{R1: 
-this cites the new mechanism for generating statistics pages and
-gives the impression that it is widely used, but I don't think that is the
-case.  Many areas do not have statistics pages, and some have it but do not
-use the new approach
-}
 
 Each section of the LMFDB has a search page, where users can input constraints they would like their curve, field or group to satisfy.
 Some input boxes require an integer or list of integers; others need a label string in a particular format; others a rational number.
@@ -477,6 +471,7 @@ It also makes it easier to create these statistics pages for more sections of th
 In addition to the intrinsic benefits of using PostgreSQL, the transition has eased the implementation of a number of new features.
 While many of these would have been possible using MongoDB, the improved abstraction made implementing them much more manageable.
 And some, such as dynamic statistics and verifications, rely on PostgreSQL's improved performance and the relational model.
+\todoinline{R1: this cites the new mechanism for generating statistics pages and gives the impression that it is widely used, but I don't think that is the case.  Many areas do not have statistics pages, and some have it but do not use the new approach }
 
 PostgreSQL supports transactions, allowing one to roll back to a functional earlier state if some later action fails.
 We have built these transactions into our interface layer, making it possible to safely modify rows in place, rather than creating a copy of the whole table when changes are made.
