@@ -139,11 +139,14 @@ The LMFDB hosts a variety of databases, including some predating the project \ci
 \label{sec:nutsbolts}
 
 
-When it comes to hosting a mathematical database, there are a wide range of options available.
+When it comes to hosting a mathematical database, there is a wide range of options available.
 Until the last several decades, the only choice was to use a print format, for example in a book or an article, and rely on a publisher to distribute its content and to make it available to the rest of scientific community.
-Since the publisher takes care of most of the technical issues, this method offers the benefit of simplicity to the author, but distribution in print provides a number of disadvantages compared to digital distribution via the internet.
+Since the publisher takes care of most of the technical issues, this method offers the benefit of simplicity to the author.
+Still, distribution in print provides several disadvantages compared to digital distribution via the internet.
 For instance, the act of publishing through print is a lengthy process, and the data is less immediately accessible than online distribution, putting barriers in the way of the database user.
-Furthermore, once the data is published it is extremely difficult to address  mistakes, add new data or features.
+Furthermore, once the data is published, it is challenging to address mistakes, add new data or features.
+For last, it can only accommodate small databases, due to the physical requirements to print.
+
 
 On the other hand, given that the digital distribution of mathematical data is not taken on by publishers, authors have many more choices to make.
 We break down these choices into the following related categories:
@@ -163,8 +166,6 @@ We organize the options for how to encode the database in a machine readable for
      Storing the data set in a human readable format, like a  plain text file or a comma-separated values file, is one of the most straightforward possible solutions.
      It does not require special software to access the data, very similar to a table in print.
     However, it can be cumbersome and impractical to search or manipulate the data without additional tools.
-    \todoinline{R2: Didn't mention one of the more serious issues with print: the sheer volume
-of paper it would take to print out the LMFDB is beyond impractical. }
 \todoinline{R2: Sure csv counts as ``human readable'' but so does JSON. I think this category really seems to be about data without any sort of front-end for which you have to actually look through the data manually to find anything, i.e. data that is ``meant to be read by humans'' more so than the format being readable by humans. For small data sets, that is possible.}
 
 \subhead{Application dependent files}
