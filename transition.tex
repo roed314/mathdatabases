@@ -78,7 +78,7 @@ We divide this discussion into three parts: how to encode and manipulate the dat
 In each category, we present several options, along with a brief analysis of their pros and cons.
 
 The technical core of the article is the comparison of MongoDB and PostgreSQL, along with our experience in switching between them.
-We were motivated to change systems primarily for performance reasons: many searches that we wanted to support stalled on common inputs, and we didn't see a way to resolve the issue within MongoDB.
+We were motivated to change systems primarily for performance reasons: many searches that we wanted to support stalled on common inputs, and we did not see a way to resolve the issue within MongoDB.
 A number of missing features in MongoDB also pushed us toward shifting: support for arbitrary precision integers and transactions that allow multiple commands to be rolled back if there is a failure.\footnote{MongoDB 4.0 added support for transactions but was released after we switched to PostgreSQL.}
 We summarize the major differences, including the distinction between a relational database and a document-oriented database, and describe some of the features of each that were important in different stages of the LMFDB's history.
 We also outline our process for both porting the data and updating the codebase to use a different system.
@@ -139,11 +139,14 @@ The LMFDB hosts a variety of databases, including some predating the project \ci
 \label{sec:nutsbolts}
 
 
-When it comes to hosting a mathematical database, there are a wide range of options available.
+When it comes to hosting a mathematical database, there is a wide range of options available.
 Until the last several decades, the only choice was to use a print format, for example in a book or an article, and rely on a publisher to distribute its content and to make it available to the rest of scientific community.
-Since the publisher takes care of most of the technical issues, this method offers the benefit of simplicity to the author, but distribution in print provides a number of disadvantages compared to digital distribution via the internet.
+Since the publisher takes care of most of the technical issues, this method offers the benefit of simplicity to the author.
+Still, distribution in print provides several disadvantages compared to digital distribution via the internet.
 For instance, the act of publishing through print is a lengthy process, and the data is less immediately accessible than online distribution, putting barriers in the way of the database user.
-Furthermore, once the data is published it is extremely difficult to address  mistakes, add new data or features.
+Furthermore, once the data is published, it is challenging to address mistakes, add new data or features.
+For last, it can only accommodate small databases, due to the physical requirements to print.
+
 
 On the other hand, given that the digital distribution of mathematical data is not taken on by publishers, authors have many more choices to make.
 We break down these choices into the following related categories:
@@ -155,16 +158,14 @@ We break down these choices into the following related categories:
 We will overview some of the possible options in each of these categories
 
 \subsection{Back End}
-\todoinline{R2: (3) I found section 3.1 a little weird in the choice of categories}
 
 We organize the options for how to encode the database in a machine readable format by how easy it is to search for content.
 
 \subhead{Human readable files}
+\todo{Human friendly?}
      Storing the data set in a human readable format, like a  plain text file or a comma-separated values file, is one of the most straightforward possible solutions.
      It does not require special software to access the data, very similar to a table in print.
     However, it can be cumbersome and impractical to search or manipulate the data without additional tools.
-    \todoinline{R2: Didn't mention one of the more serious issues with print: the sheer volume
-of paper it would take to print out the LMFDB is beyond impractical. }
 \todoinline{R2: Sure csv counts as ``human readable'' but so does JSON. I think this category really seems to be about data without any sort of front-end for which you have to actually look through the data manually to find anything, i.e. data that is ``meant to be read by humans'' more so than the format being readable by humans. For small data sets, that is possible.}
 
 \subhead{Application dependent files}
@@ -301,6 +302,7 @@ As a mathematical database, the LMFDB frequently uses large integers which had t
 In addition to the storage consequences, various workarounds were required to sort and search the data correctly.
 The elimination of these hacks has simplified some of the supporting code.
 \todoinline{R2:  By choosing ``database'' format you automatically have indexes. You also seem to say the MongoDB and PostgreSQL use the same type of binary tree based indexes, but do not mention why PostgreSQL is so much faster. If I were someone writing my own database it seems like you are saying to use PostgreSQL if at all possible (i.e., if I don't really need a huge number of different document types). Again table of pros/cons would be helpful here.}
+\todoinline{mention that MongoDB and PostgreSQL are optimised for two different data sets}
 
 While smaller tables help with query performance, indexes provide a more powerful tool for speeding up searches.
 Indexes facilitate the location of records with constraints on a specified set of columns by storing additional data.
@@ -352,7 +354,7 @@ PostgreSQL's \texttt{COPY FROM} command allows for rapid importing of data from 
 For example, we imported a \numprint{14398359} row table from a 680GB text file in about 8 hours.
 With MongoDB we estimate that would have taken us several days.
 Creating indexes in PostgreSQL is also dramatically faster than in MongoDB, approximately by an order of magnitude.
-Additionally, PostgreSQL offers numerous open source front ends and administration tools~\cite{pgadmin,adminer} that lower the learning curve for the SQL language.\todo{R2: MongoDB has numerous open source admin tools as well. Why are the PostgreSQL tools better?}
+Additionally, due to its maturity, PostgreSQL offers a diverse set of open source front ends and administration tools, for example~\cite{pgadmin,adminer}, that lower the learning curve for the SQL language.\todo{R2: MongoDB has numerous open source admin tools as well. Why are the PostgreSQL tools better?}
 The transition has substantially improved database management.
 
 In addition to performance improvements, PostgreSQL makes new kinds of queries possible.
@@ -444,12 +446,6 @@ We highlight three in particular to illustrate the kinds of encapsulation that a
 We centralized many of the scripts used to upload data into a suite of data management tools.
 There is now a single object available from the Sage command line that has methods for performing a variety of tasks: creating new tables and modifying existing schemas, copying data to and from text files, moving data between the beta and production versions of the database, accessing PostgreSQL's tools for analyzing slow queries, adding indexes and constraints, and tracking statistics as data is changed.
 The centralization of these tasks allows us to reduce code duplication and to use best practices in handling errors.
-\todoinline{R1: 
-this cites the new mechanism for generating statistics pages and
-gives the impression that it is widely used, but I don't think that is the
-case.  Many areas do not have statistics pages, and some have it but do not
-use the new approach
-}
 
 Each section of the LMFDB has a search page, where users can input constraints they would like their curve, field or group to satisfy.
 Some input boxes require an integer or list of integers; others need a label string in a particular format; others a rational number.
@@ -489,6 +485,7 @@ The statistics infrastructure has enabled a new user interface which we refer to
 Rather than presenting only a pre-selected set of views, the user can specify which variables they are interested in, as well as constraints on the objects.
 The system then generates a display describing the possible values of those variables and the number of objects possessing each possible set of values.
 For example, a user can create a table to view how the weight and level of modular forms vary among forms with complex multiplication.
+As of June 2020 we are still in the process of enabling this feature throughout the LMFDB.
 We hope that this feature will provide researchers with a new method of interacting with the LMFDB, allowing them to look for large scale patterns in these objects in addition to searching for objects with particular properties.
 
 Many browse pages in the LMFDB already had a link to view a random object.
