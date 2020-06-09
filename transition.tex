@@ -471,7 +471,6 @@ It also makes it easier to create these statistics pages for more sections of th
 In addition to the intrinsic benefits of using PostgreSQL, the transition has eased the implementation of a number of new features.
 While many of these would have been possible using MongoDB, the improved abstraction made implementing them much more manageable.
 And some, such as dynamic statistics and verifications, rely on PostgreSQL's improved performance and the relational model.
-\todoinline{R1: this cites the new mechanism for generating statistics pages and gives the impression that it is widely used, but I don't think that is the case.  Many areas do not have statistics pages, and some have it but do not use the new approach }
 
 PostgreSQL supports transactions, allowing one to roll back to a functional earlier state if some later action fails.
 We have built these transactions into our interface layer, making it possible to safely modify rows in place, rather than creating a copy of the whole table when changes are made.
@@ -485,6 +484,7 @@ The statistics infrastructure has enabled a new user interface which we refer to
 Rather than presenting only a pre-selected set of views, the user can specify which variables they are interested in, as well as constraints on the objects.
 The system then generates a display describing the possible values of those variables and the number of objects possessing each possible set of values.
 For example, a user can create a table to view how the weight and level of modular forms vary among forms with complex multiplication.
+As of June 2020 we are still in the process of enabling this feature throughout the LMFDB.
 We hope that this feature will provide researchers with a new method of interacting with the LMFDB, allowing them to look for large scale patterns in these objects in addition to searching for objects with particular properties.
 
 Many browse pages in the LMFDB already had a link to view a random object.
