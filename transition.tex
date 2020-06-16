@@ -484,13 +484,12 @@ Some of these verifications are internal, such as checking that the defining pol
 Others rely on connections with other tables in the database, such as checking that invariants matchup between an elliptic curve and its corresponding modular form.
 These kinds verifications across different tables are much faster using PostgreSQL, since the relational database model is explicitly designed for searching across different tables.
 The switch to PostgreSQL made it possible to create a framework to write such consistency checks and run them whenever new data is added.
-\todoinline{R1: 
-The final paragraph seemed like an awkward end -- that it would be
-better with a brief conclusion.  I realize this would just be repeating
-some of the earlier points, but the article is expository, so a conclusion
-seems natural.  It would not have to be long; a single paragraph would
-suffice.
-}
+
+
+
+We are excited about the new features that we added to the LMFDB and we believe that the transition to PostgreSQL will aid with the long term maintenance of the project.
+We look forward to the ways which the abstraction layer we have created around database interactions will aid in standardizing the user experience across LMFDB.
+We hope others will learn from our experience in their efforts to leverage computation and data towards the study of mathematics.
 
 \bibliography{biblio}
 
