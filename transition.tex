@@ -157,48 +157,45 @@ We break down these choices into the following related categories:
 \end{itemize}
 We will overview some of the possible options in each of these categories
 
-\subsection{Back End}
+\subsection{Back end}
 
 We organize the options for how to encode the database in a machine readable format by how easy it is to search for content.
 
+
 \subhead{Human readable files}
-\todo{Human friendly?}
      Storing the data set in a human readable format, like a  plain text file or a comma-separated values file, is one of the most straightforward possible solutions.
      It does not require special software to access the data, very similar to a table in print.
     However, it can be cumbersome and impractical to search or manipulate the data without additional tools.
-\todoinline{R2: Sure csv counts as ``human readable'' but so does JSON. I think this category really seems to be about data without any sort of front-end for which you have to actually look through the data manually to find anything, i.e. data that is ``meant to be read by humans'' more so than the format being readable by humans. For small data sets, that is possible.}
+    Note that simple searches are possible using tools like grep or the find feature of a text editor.
+    However, these methods do not offer the full search capability of a database.
 
 \subhead{Application dependent files}
     A more advanced solution is to store the dataset in an application dependent format.
     For example, the Small Groups Library~\cite{smallgroups} available in the GAP computer algebra system~\cite{gap} uses a specific method to encode solvable groups.
     In many cases, such a choice enables direct manipulation of the desired objects.
     For example, using SageMath pickles makes it easy to load the data into an active SageMath session.
-    However, the dataset will not likely be efficiently searchable, and most content searches would need to loop over every item in the dataset (a sequential search).
-    Moreover, specialized data formats are vulnerable to backward-incompatible changes in the software used to load them.
-    \todoinline{R2: (application dependent). I also disagree with some of the discussion here. Just because it is in an application specific format does not mean that it is not effi- ciently searchable. It depends entirely on how well the custom data format was implemented. The real issue here seems to be a lack of compatibility and long term maintainability.}
+    However, the dataset will not likely be efficiently searchable, searching for objects with specific properties will usually require to loop over every item in the dataset (a sequential search).
+    Moreover, specialized data formats are vulnerable to backward-incompatible changes in the software used to load them and are more difficult to maintain in the long run.
 
 \subhead{Database structure}
-\todoinline{R2: (database structure) ``Database'' and ``optimized for searching'' are not synonymous to me. Yes, indexes are a natural part of a database format, but if the index is not indexing the ``right'' things then the searches are still terrible. If fact, isn't the whole issue with switching from MongoDB to PostgreSQL was that MongoDB was not optimized for the searches you were trying to perform. I think the key here is longterm stability and compatibility and the many existing tools already developed both for searching and administrating.}
     Finally, one may store the dataset in a database format, i.e. in a format optimized for searching.
     As above, such a solution will require additional software for users to manipulate the data, but the data formats are more stable in practice since database software is widely used beyond mathematics.
-    There are many types of database available; in this article, we will focus on two:
+    There are many types of database available, each optimized with different applications; in this article, we will focus on two:
     \begin{itemize}
       \item relational database --- a collection of ledger-style tables with a fixed schema, where the structure of each row is constant.
         This kind of database has been prevalent for decades; major examples include Oracle~\cite{oracle}, MySQL~\cite{mysql}, PostgreSQL~\cite{postgres}, and SQLite~\cite{sqlite}.
       \item document oriented database --- a schema free database, where each object is stored in a single instance in the database, and every stored object can be different from every other.
         MongoDB~\cite{mongo} is one of the most famous instantiations of this paradigm.
     \end{itemize}
-    In Section~\ref{sec:MvsP} we will contrast PostgreSQL and MongoDB.
+    In Section~\ref{sec:MvsP}, we will contrast PostgreSQL and MongoDB.
 
 
-\subsection{Front End}
+\subsection{Front end}
 
 There are many choices for how to enable a user to interact with data.
 Different options have varying degrees of accessibility and utility; we describe three possibilities below.
 
-\subhead{Direct access}
-\todoinline{R2: ``direct access'' to me really sounds like the ``no front end'' case. You are simply
-looking at the raw data.}
+\subhead{Minimal}
     The author may decide to provide direct access to the database.
     For example, the author may make the database files available through email or a webpage; or
     allow direct read access to a SQL server \cite{umrk}.
@@ -223,43 +220,34 @@ The user may also interact with the database through a collection of web pages d
     The main downside of this approach is a higher level of complexity when compared to the static option.
 
 \subsection{Hosting}
-\todoinline{}
-\todoinline{R2:  Seems like this section could be split up into front-end hosting versus database hosting. Surprisingly there was no discussion of the MongoDB hosting or AWS hosting pros/cons, or any of other major hosting resources/services.
-(a) It seems like the authors are confusing hosting the data with hosting the front-end.\\
-(b) Personal hard-drive: The accessibility of this data depends on the accessibility of \\the front end, not where the data is actually stored. Missed a major con of the front end utilizing the resources of your personal machine and exposing it to security risks.                                                                         \\
-(c) Personal webpage is only a host if it is static web-page with all the data written  \\
-out in the webpage (i.e., no database behind it)                                        \\
-(d) web framework: is this for storing the database or the front-end?                   \\
-}
-\todoinline{not every combination is valid}
-\todoinline{Add note saying that front-end and back-end do not need to be hosted in the same device}
 
-Finally, we discuss some of the options for where to physically store the database.
+Finally, we discuss some of the options for where to physically host the front end and the database.
 We focus on how each possibility varies in terms of cost, ease of maintenance and scalability. 
 %Note that some options for the back end and front end can be split up into 
 
 \subhead{Personal hard-drive}
     This is one of the simplest options, as it has no initial set up cost.
-    However, it severely limits the accessibility of the database to others.
+    However, it severely limits the accessibility of the database to others, due to the lack of a front end.
 
 \subhead{Personal web page}
-    If one already maintains a personal web page, a convenient option is to also use it to host the database.
-    However, the scope might be limited, as one may not have full access to the hosting servers.
+    If one already maintains a personal web page, a convenient option is to also use it to host the database and the front end.
+    However, the scope might be limited, as many universities will only allow their users to host static content.
 
 \subhead{Web framework}
     Another convenient option is to use a web framework service (e.g. GitHub, CoCalc, Wordpress/Wikidot/blogs).
-    These options offer a lower initial set up cost with a minimal long term maintenance cost, however, the scope is also limited by the framework.
+    For example, some people might just dump their database into GitHub, while other might also use it to host the front end.
+    These options offer a lower initial set up cost with a minimal long term maintenance cost, however, the scope is also limited by the framework, since they control what software is used to host content.
 
 \subhead{On a university/personal server}
     This solution provides complete control.
     However, there is both a high initial cost in buying the servers and setting them up.  Moreover, one also needs to maintain the server for the duration of its life: installing security updates, dealing with service interruptions and managing backups.
     In addition, the database's scope might be limited by the capabilities of the initial hardware choices.
-    The LMFDB uses a couple of servers purchased through grants to provide a development platform for our contributors, and host \url{beta.lmfdb.org}
+    The LMFDB uses a couple of servers purchased through grants to provide a development platform for our contributors, and host the back end and the front end for \url{beta.lmfdb.org}
 
 \subhead{Using a hosting service}
 Servers in the cloud \cites{aws, gcp} provide complete control and have no monetary startup costs, but require ongoing payments proportional to the resources used.
-    The main benefit is that one does not need to worry about maintaining the servers themselves; cloud servers also have the ability to easily scale the resources available if necessary.
-    This option is currently used by the LMFDB to host \url{www.lmfdb.org}.
+  The main benefit is that one does not need to worry about maintaining the servers themselves; cloud servers also have the ability to easily scale the resources available if necessary.
+  This option is currently used by the LMFDB to host \url{www.lmfdb.org}.
 
 
 \section{MongoDB vs PostgreSQL}
