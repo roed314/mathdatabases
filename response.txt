@@ -2,4 +2,11 @@
 - we added a couple more information regarding other databases prior/on-going efforts by people involved in the LMFDB project
 - we decided not expand on the caching remark, but we remarked why this is not so relevant for the ongoing discussion
 - expanded a bit more on the abstraction layer, and it has been useful in other projects
-- we clarified that some of the features are not yet widesread accross LMFDB
+- we clarified that some of the features are not yet widespread across LMFDB
+- we believe that is out of the scope of this paper to:
+  - do a generic comparison between both database types
+  - discuss caching options that both databases have to offer
+
+-  we are not aware of any of the existing migration tools between MongoDB and PostgreSQL
+
+- Regarding the internal verification of defining polynomials of number fields being irreducible, this is done for coefficient fields of newforms, see lmfdb/lmfdb/verify/mf_newforms.py line 433. We agree that we could elaborate more on this example, however, we feel that would obscure the point with unnecessary complexity.
