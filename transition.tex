@@ -68,18 +68,18 @@ We focus on one particular case study: the effort to migrate the database system
 
 We hope that this article will be useful to mathematicians aspiring to create or improve their own databases, to database engineers who are considering switching from MongoDB to PostgreSQL, and to mathematicians participating in large software projects for whom some of the LMFDB's lessons might prove useful.
 
-We begin with a survey of existing mathematical databases in order to highlight the diversity of approaches taken to disseminating mathematical data.
+We begin with a survey of existing mathematical databases to highlight the diversity of approaches used to disseminate mathematical data.
 While some focus on communicating theorems and propositions, we pay more attention to those which center on examples.
 Among these, we observe a range of search functionality.
 Since the LMFDB prioritizes the ability to search by properties of each object, we hope that our experience working with MongoDB and PostgreSQL will help other mathematical resources improve their capabilities in this area.
 
-We next consider some of the significant choices involved in setting up and maintaining such a database.
-We divide this discussion into three parts: how to encode and manipulate the data, how the user interacts with the database, and where the data is physically stored.
-In each category, we present several options, along with a brief analysis of their pros and cons.
+Next, we consider some of the important choices involved in setting up and maintaining such a database.
+We divide this discussion into three parts: how to encode and manipulate the data, how the user interacts with the database, and where it is physically stored.
+In each category, we present several options and a brief analysis of their pros and cons.
 
 The technical core of the article is the comparison of MongoDB and PostgreSQL, along with our experience in switching between them.
-We were motivated to change systems primarily for performance reasons: many searches that we wanted to support stalled on common inputs, and we did not see a way to resolve the issue within MongoDB.
-A number of missing features in MongoDB also pushed us toward shifting: support for arbitrary precision integers and transactions that allow multiple commands to be rolled back if there is a failure.\footnote{MongoDB 4.0 added support for transactions but was released after we switched to PostgreSQL.}
+We were motivated to change systems primarily for performance reasons: many searches that we wanted to support stalled on common inputs. We did not see a way to resolve the issue within MongoDB.
+Several missing features in MongoDB also pushed us toward shifting: support for arbitrary precision integers and transactions that allow multiple commands to be rolled back if there is a failure.\footnote{MongoDB 4.0 added support for transactions but was released after we switched to PostgreSQL.}
 We summarize the major differences, including the distinction between a relational database and a document-oriented database, and describe some of the features of each that were important in different stages of the LMFDB's history.
 We also outline our process for both porting the data and updating the codebase to use a different system.
 
@@ -117,7 +117,7 @@ The main tool for doing so is a webpage element called a \emph{knowl}, which is 
 Within the LMFDB, knowls are embedded inside webpages or other knowls, and expand to provide more information when clicked.
 Such exposition is an important part of the presentation of a database, but is peripheral to our main topic of the functioning of the underlying system.
 
-Another important aspect of a database project that falls beyond the scope of this article is the social and financial efforts required to sustain a collaboration.
+Another important aspect of a database project that falls beyond this article's scope is the social and financial efforts required to sustain a collaboration.
 There are numerous examples of projects that are no longer accessible because the authors have moved on or passed away.
 Projects have various ways of reaching out to potential developers, ranging from academic workshops and conferences, to the standard open source tools such as GitHub~\cite{github}, to forms allowing users to easily submit data \cites{findstat, hog, oeis}.
 In this article, we limit our attention to the technical side of the job: from setting up hosting servers, to the different options for database software, to details on how the LMFDB functions.
@@ -227,7 +227,7 @@ We focus on how each possibility varies in terms of cost, ease of maintenance an
 
 \subhead{Personal hard-drive}
     This is one of the simplest options, as it has no initial set up cost.
-    However, it severely limits the accessibility of the database to others, due to the lack of a front end.
+    However, it severely limits the database's accessibility to others due to the lack of a front end.
 
 \subhead{Personal web page}
     If one already maintains a personal web page, a convenient option is to also use it to host the database and the front end.
@@ -235,13 +235,13 @@ We focus on how each possibility varies in terms of cost, ease of maintenance an
 
 \subhead{Web framework}
     Another convenient option is to use a web framework service (e.g. GitHub, CoCalc, Wordpress/Wikidot/blogs).
-    For example, some people might just dump their database into GitHub, while other might also use it to host the front end.
+    For example, some people might dump their database into GitHub, while others might also use it to host the front end.
     These options offer a lower initial set up cost with a minimal long term maintenance cost, however, the scope is also limited by the framework, since they control what software is used to host content.
 
 \subhead{On a university/personal server}
     This solution provides complete control.
-    However, there is both a high initial cost in buying the servers and setting them up.  Moreover, one also needs to maintain the server for the duration of its life: installing security updates, dealing with service interruptions and managing backups.
-    In addition, the database's scope might be limited by the capabilities of the initial hardware choices.
+    However, there is both a high initial cost in buying the servers and setting them up. Moreover, one needs to maintain the server for its duration: installing security updates, dealing with service interruptions, and managing backups.
+    Besides, the database's scope might be limited by the capabilities of the initial hardware choices.
     The LMFDB uses a couple of servers purchased through grants to provide a development platform for our contributors, and host the back end and the front end for \url{beta.lmfdb.org}
 
 \subhead{Using a hosting service}
@@ -264,11 +264,11 @@ As a relational database, PostgreSQL stores data in a structured way, where the 
 
 MongoDB and PostgreSQL offer two different database paradigms.
 MongoDB, as a document-oriented database, is meant to facilitate the storage of unstructured data, where the fields and types present in each document can vary within a collection.
-This flexibility is extremely convenient, since the data structure can organically evolve as project develops.
+This flexibility is extremely convenient since the data structure can organically evolve as the project develops.
 However, it can also easily lead to errors and unnecessary overhead for a structured database.
 For example, field names were kept short in MongoDB to save space, and multiple typos in the field names were found during the transition to PostgreSQL.
-Furthermore, differing layouts across documents required more complicated processing code.
-In contrast, PostgreSQL is a relational database, with fixed schemas that enable queries across multiple tables.
+Furthermore, differing layouts across documents required a more complicated processing code.
+In contrast, PostgreSQL is a relational database with fixed schemas that enable queries across multiple tables.
 Since the LMFDB was already a uniform set of fields in MongoDB (so much so that an inventory application was written to extract a schema from the data), creating a formal schema was fairly straightforward.
 Database-level schema support improves robustness and performance, and PostgreSQL's JSONB type allows for schemaless columns when desired.
 
@@ -285,7 +285,7 @@ For some of the LMFDB's collections, these names accounted for a substantial fra
 In addition to the space benefits, the switch to PostgreSQL also relaxes the pressure to minimize the lengths of these names, improving readability.
 
 The second factor contributing to space savings is PostgreSQL's support for arbitrary precision integers.
-As a mathematical database, the LMFDB frequently uses large integers which had to be stored as strings in MongoDB.
+As a mathematical database, the LMFDB frequently uses large integers, which had to be stored as strings in MongoDB.
 In addition to the storage consequences, various workarounds were required to sort and search the data correctly.
 The elimination of these hacks has simplified some of the supporting code.
 
@@ -295,7 +295,7 @@ Having such indexes available is key to providing quick search results for typic
 For example, both MongoDB and PostgreSQL support indexes based on binary trees, which work well for totally ordered data such as integers and strings.
 However, there is another query type that is not well supported by binary trees: given a column representing a set of integers, search for rows that contain a particular set, or are contained in a particular set.
 For example, we store the set of ramified primes $R_K$ for number fields $K$, and we want to be able to search on number fields by specifying such constraints on $R_K$.
-Even though we supported such searches through our web interface, many such searches took more than a couple of minutes to perform within MongoDB, which caused our web front end to timeout.
+Even though we supported such searches through our web interface, many such searches took over a couple of minutes to perform within MongoDB, which caused our web front end to timeout.
 In PostgreSQL, most of these queries finish in a couple of seconds, both when the number of results is not large enough to justify using an index (the first three rows of Table~\ref{table:ramps}), and when generalized inverted indexes (GIN)~\cite{gin} apply (the last row of Table~\ref{table:ramps}).
 \begin{table}[h!]
   \begin{center}
@@ -334,7 +334,7 @@ $\{E : \# \Sha = 4, \rank E = 1, \# E_{\text{torsion}} = 1\}$ & 1min 58s & 1.95s
 
 
 While search performance is vital for website usability, the process of uploading data and creating indexes is also essential to make the development sustainable and to aid in the implementation of new features.
-PostgreSQL's \texttt{COPY FROM} command allows for rapid importing of data from plain-text files without a Python intermediary, which is useful when the data is generated by some other system such as Magma~\cite{magma}.
+PostgreSQL's \texttt{COPY FROM} command allows for the rapid importing of data from plain-text files without a Python intermediary, which is useful when the data is generated by some other system such as Magma~\cite{magma}.
 For example, we imported a \numprint{14398359} row table from a 680GB text file in about 8 hours.
 With MongoDB we estimate that would have taken us several days.
 Creating indexes in PostgreSQL is also dramatically faster than in MongoDB, approximately by an order of magnitude.
@@ -390,9 +390,9 @@ We also took advantage of the transition to change some data types that had been
 For example, many large integers had been stored as strings since MongoDB lacked an arbitrary precision data type.
 With the switch to PostgreSQL, we were able to use the numeric type instead, which simplified code used to sort and compute with the results.
 
-Since one of the goals of the switch was to improve performance, we made some changes to the schemas to help speed up queries.
+Since one of the switch goals was to improve performance, we made some changes to the schemas to help speed up queries.
 In particular, we split some of the largest tables in half, putting columns that were used for searching into a search table and columns that were only used for display into an \emph{extras table}.
-This significantly reduced the size of the search table, improving index efficiency, and speeding up indexless queries that had to traverse the whole table.
+This significantly reduced the search table's size, improved index efficiency, and speeded up indexless queries that had to traverse the whole table.
 Query performance is also affected by sort order, and the default sorting on many tables uses four or five columns.
 We added a primary key column to each table, and for large tables we ordered this primary key by the table's standard order.
 This feature decreased the size of indexes and improved their performance since search results could be ordered by a single numeric column rather than a combination of many columns.
@@ -400,7 +400,7 @@ This optimization was feasible because the data in the LMFDB changes infrequentl
 
 With the schemas created and export scripts written, the actual changeover of the data went reasonably smoothly.
 PostgreSQL provides a COPY FROM command to load data from a text file, which runs very quickly.
-After several false starts, exporting 400GB of data from MongoDB to text files took three or four days, copying it between servers on opposite sides of the Atlantic took less than a day and loading it into PostgreSQL took less than a day.
+After several false starts, exporting 400GB of data from MongoDB to text files took three or four days; copying it between servers on opposite sides of the Atlantic took less than a day, and loading it into PostgreSQL took less than a day.
 
 Adapting the LMFDB codebase to use PostgreSQL took longer.
 The backend code for the LMFDB is written in Python, and the Python bindings for MongoDB and PostgreSQL take a very different approach.
@@ -409,7 +409,7 @@ Queries are performed by constructing dictionaries that specify the values of ce
 Psycopg~\cite{psycopg}, on the other hand, is a thin interface that offers the user the ability to execute SQL statements.
 Constructing queries using dictionaries worked well as a model for the LMFDB, since the search pages provided many inputs that could be processed independently into a dictionary.
 Moreover, we did not want to require LMFDB developers to learn SQL.
-We therefore implemented a high level interface to PostgreSQL that translated a dictionary-based query system similar to PyMongo's into SQL SELECT statements, while avoiding SQL injection attacks.
+Therefore, we implemented a high-level interface to PostgreSQL that translated a dictionary-based query system similar to PyMongo's into SQL SELECT statements while avoiding SQL injection attacks.
 This query interface has already proved useful in rapidly prototyping another project, \href{https://researchseminars.org}{researchseminars.org}, and we plan to make it available as a stand-alone tool.
 
 \section{Benefits}
@@ -417,9 +417,9 @@ This query interface has already proved useful in rapidly prototyping another pr
 \subsection{Abstraction}
 
 As the LMFDB has grown, the most common paradigm for adding new features has been to take a functional section of the website, copy it to a new folder, and modify the templates and backend code.
-This approach has the benefit of easily producing valid code, since one is iteratively making small changes to an already functional webpage.
+This approach has the benefit of easily producing valid code since it is iteratively making small changes to an already functional webpage.
 However, it leads to large quantities of repeated code, which make fixing bugs and adding features much harder, since the same change must be applied in dozens of locations.
-The standard solution is to encapsulate tasks into functions, that can then be used repeatedly and changed as needed.
+The standard solution is to encapsulate tasks into functions that can then be used repeatedly and changed as needed.
 Of course, the LMFDB has used functions like this since the beginning, but often these functions are not written in a way that allows them to be used in multiple sections of the website.
 
 The task of switching from MongoDB to PostgreSQL was made more difficult by this low level of abstraction, but it also presented an opportunity.
@@ -428,7 +428,7 @@ We highlight three in particular to illustrate the kinds of encapsulation that a
 
 We centralized many of the scripts used to upload data into a suite of data management tools.
 There is now a single object available from the Sage command line that has methods for performing a variety of tasks: creating new tables and modifying existing schemas, copying data to and from text files, moving data between the beta and production versions of the database, accessing PostgreSQL's tools for analyzing slow queries, adding indexes and constraints, and tracking statistics as data is changed.
-The centralization of these tasks allows us to reduce code duplication and to use best practices in handling errors.
+The centralization of these tasks allows us to reduce code duplication and use best practices to handle errors.
 
 Each section of the LMFDB has a search page, where users can input constraints they would like their curve, field or group to satisfy.
 Some input boxes require an integer or list of integers; others need a label string in a particular format; others a rational number.
@@ -465,7 +465,7 @@ We also log high-level actions, such as adding new data to a table or changing a
 These logs help us ensure the quality of our data.
 
 The statistics infrastructure has enabled a new user interface which we refer to as \emph{dynamic statistics}.
-Rather than presenting only a pre-selected set of views, the user can specify which variables they are interested in, as well as constraints on the objects.
+Rather than presenting only a pre-selected set of views, the user can specify which variables they are interested in and the objects' constraints.
 The system then generates a display describing the possible values of those variables and the number of objects possessing each possible set of values.
 For example, a user can create a table to view how the weight and level of modular forms vary among forms with complex multiplication.
 As of June 2020 we are still in the process of enabling this feature throughout the LMFDB.
@@ -482,13 +482,13 @@ This change dramatically improved response times in some cases, where a large nu
 Mathematical data differ from data in most other applications because it has a notion of correctness that can be checked, rather than just providing a record of a real-world measurement.
 Some of these verifications are internal, such as checking that the defining polynomial of a number field is irreducible or that the sum of the complex embeddings of classical modular matches the trace of the exact newform.
 Others rely on connections with other tables in the database, such as checking that invariants matchup between an elliptic curve and its corresponding modular form.
-These kinds verifications across different tables are much faster using PostgreSQL, since the relational database model is explicitly designed for searching across different tables.
+These kinds of verifications across different tables are much faster using PostgreSQL, since the relational database model is explicitly designed to search across different tables.
 The switch to PostgreSQL made it possible to create a framework to write such consistency checks and run them whenever new data is added.
 
 
 
 We are excited about the new features that we added to the LMFDB and we believe that the transition to PostgreSQL will aid with the long term maintenance of the project.
-We look forward to the ways which the abstraction layer we have created around database interactions will aid in standardizing the user experience across LMFDB.
+We look forward to how the abstraction layer we have created around database interactions will help standardize the user experience across LMFDB.
 We hope others will learn from our experience in their efforts to leverage computation and data towards the study of mathematics.
 
 \bibliography{biblio}
