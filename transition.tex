@@ -261,12 +261,11 @@ In March 2018, we decided to transition from MongoDB to PostgreSQL, a popular op
 As a relational database, PostgreSQL stores data in a structured way, where the data is organized in tables, and each table has a specified schema, i.e., each row must have the same layout, with the types of columns constant across all rows.
 
 \subsection{Comparing two database systems}
-\todoinline{R2: Why did you write your own and not use any of the existing migration tools?}
-\todoinline{many workarounds around MongoDB limitations in its early stages imputed limitations on using an existing tool to automatically migrate the data between MongoDB and PostgresSQL}
 
 MongoDB and PostgreSQL offer two different database paradigms.
 MongoDB, as a document-oriented database, is meant to facilitate the storage of unstructured data, where the fields and types present in each document can vary within a collection.
-This flexibility is extremely convenient, but can also easily lead to errors and unnecessary overhead for a structured database.
+This flexibility is extremely convenient, since the data structure can organically evolve as project develops.
+However, it can also easily lead to errors and unnecessary overhead for a structured database.
 For example, field names were kept short in MongoDB to save space, and multiple typos in the field names were found during the transition to PostgreSQL.
 Furthermore, differing layouts across documents required more complicated processing code.
 In contrast, PostgreSQL is a relational database, with fixed schemas that enable queries across multiple tables.
@@ -289,8 +288,6 @@ The second factor contributing to space savings is PostgreSQL's support for arbi
 As a mathematical database, the LMFDB frequently uses large integers which had to be stored as strings in MongoDB.
 In addition to the storage consequences, various workarounds were required to sort and search the data correctly.
 The elimination of these hacks has simplified some of the supporting code.
-\todoinline{R2:  By choosing ``database'' format you automatically have indexes. You also seem to say the MongoDB and PostgreSQL use the same type of binary tree based indexes, but do not mention why PostgreSQL is so much faster. If I were someone writing my own database it seems like you are saying to use PostgreSQL if at all possible (i.e., if I don't really need a huge number of different document types). Again table of pros/cons would be helpful here.}
-\todoinline{mention that MongoDB and PostgreSQL are optimised for two different data sets}
 
 While smaller tables help with query performance, indexes provide a more powerful tool for speeding up searches.
 Indexes facilitate the location of records with constraints on a specified set of columns by storing additional data.
@@ -319,8 +316,7 @@ $\#\{K: R_K \subset \{2, 3, 73\} \}$ & 0.1\% & 8min 11s & 170ms
 The significant improvement in indexless queries is another considerable advantage of the transition to PostgreSQL.
 Such queries are relevant, since non-typical queries can be the most interesting mathematically, and since it is impossible to construct all indexes in advance because the LMFDB offers the user a lot of freedom to select search parameters.
 We present two such examples in Table~\ref{table:indexless} (the first for number fields and the second for elliptic curves), where the number of results is about 1000 in each case.
-We also note that both queries are instantaneous on a second run, as both databases cached the results.
-However, this speedup is not as useful for the LMFDB as for some applications, since a mathematically interesting query is unlikely to be a duplicate of one run previously.
+We also note that successful queries are instantaneous on a second run, as both databases cache the results.
 
 \begin{table}[h!]
   \begin{center}
@@ -342,7 +338,7 @@ PostgreSQL's \texttt{COPY FROM} command allows for rapid importing of data from 
 For example, we imported a \numprint{14398359} row table from a 680GB text file in about 8 hours.
 With MongoDB we estimate that would have taken us several days.
 Creating indexes in PostgreSQL is also dramatically faster than in MongoDB, approximately by an order of magnitude.
-Additionally, due to its maturity, PostgreSQL offers a diverse set of open source front ends and administration tools, for example~\cite{pgadmin,adminer}, that lower the learning curve for the SQL language.\todo{R2: MongoDB has numerous open source admin tools as well. Why are the PostgreSQL tools better?}
+Additionally, PostgreSQL offers a more diverse and mature set of open source front ends and administration tools, for example~\cite{pgadmin,adminer}, that lower the learning curve for the SQL language.
 The transition has substantially improved database management.
 
 In addition to performance improvements, PostgreSQL makes new kinds of queries possible.
@@ -370,7 +366,6 @@ The existing schemas, having been designed for MongoDB, do not take advantage of
 
 
 \subsection{Transition}
-
 Once the decision had been made to switch from MongoDB to PostgreSQL, we faced two main tasks: to port the data and to update the LMFDB codebase to use PostgreSQL.
 The majority of the work was done by the second author between March 2018 and August 2018, with assistance from the first author starting in July.
 
@@ -485,23 +480,11 @@ The count is provided only if it is sufficiently small or has already been cache
 This change dramatically improved response times in some cases, where a large number of results makes finding the first few much easier than counting them all.
 
 Mathematical data differ from data in most other applications because it has a notion of correctness that can be checked, rather than just providing a record of a real-world measurement.
-Some of these verifications are internal, such as checking that the defining polynomial of a number field is irreducible or that the trace of a modular form is zero at each inert prime not dividing the level.
+Some of these verifications are internal, such as checking that the defining polynomial of a number field is irreducible or that the sum of the complex embeddings of classical modular matches the trace of the exact newform.
 Others rely on connections with other tables in the database, such as checking that invariants matchup between an elliptic curve and its corresponding modular form.
+These kinds verifications across different tables are much faster using PostgreSQL, since the relational database model is explicitly designed for searching across different tables.
 The switch to PostgreSQL made it possible to create a framework to write such consistency checks and run them whenever new data is added.
 \todoinline{R1: 
-I am not sure that there are internal verifications done that
-defining polynomials of number fields are irreducible.  The second example
-in the sentence on the trace of a modular form is unclear.  There are many
-types of modular forms, and different ways a number field might be
-associated to one (needed to interpret "inert prime").  I can infer what
-they mean, but not all readers would be able to.\\
-  The point is that one can write small programs to check for
-consistency in the data and that PostgreSQL makes this easier.  But, I
-don't think they justify why this is easier with PostgreSQL.  If one knows
-how the data is stored for say elliptic curves over Q and for weight 2
-newforms defined over Q, I think writing a program to check for consistency
-would be easy with either type of database.  My point is that if doing this
-is much easier with PostgreSQL, it needs to be explained. \\
 The final paragraph seemed like an awkward end -- that it would be
 better with a brief conclusion.  I realize this would just be repeating
 some of the earlier points, but the article is expository, so a conclusion
