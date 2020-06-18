@@ -1,12 +1,12 @@
-- reworded and reorganized various parts of section 3.
-- we added a couple more information regarding other databases prior/on-going efforts by people involved in the LMFDB project
-- we decided not expand on the caching remark, but we remarked why this is not so relevant for the ongoing discussion
-- expanded a bit more on the abstraction layer, and it has been useful in other projects
-- we clarified that some of the features are not yet widespread across LMFDB
-- we believe that is out of the scope of this paper to:
-  - do a generic comparison between both database types
-  - discuss caching options that both databases have to offer
+- We added a couple more remarks regarding other databases and prior/on-going efforts by people involved in the LMFDB project
+- We reworded and reorganized various parts of section 3.
+- We expanded a bit more on the abstraction layer, and how it has been useful in other projects
+- We believe that is out of the scope of this paper to do a detailed comparison between
+- We want to focus on the specifics between MongoDB and PostgreSQL in our setting, rather than making general recommendations on which of these options should be used in the abstract.
+We have thus decided not to incorporate some of the suggestions of including a more detailed comparison of the two systems; since such comparisons are readily available online.
+On the same line of thought, we decided not to expand on various caching features of each database.
+- We are not aware of any of the existing comprehensive migration tools between MongoDB and PostgreSQL; most reports on migration involve writing custom scripts adapted to the particular setting.
+- We clarified that some of the features are not yet widespread across LMFDB
 
--  we are not aware of any of the existing migration tools between MongoDB and PostgreSQL
-
-- Regarding the internal verification of defining polynomials of number fields being irreducible, this is done for coefficient fields of newforms, see lmfdb/lmfdb/verify/mf_newforms.py line 433. We agree that we could elaborate more on this example, however, we feel that would obscure the point with unnecessary complexity.
+- Regarding the internal verification of defining polynomials of number fields being irreducible, this is done for coefficient fields of newforms, see lmfdb/verify/mf_newforms.py line 433. We agree that we could elaborate more on this example, however, we feel that would obscure the point with unnecessary complexity. We also modified the example involving trace forms to something simpler.
+- We added a conclusion to the end of Section 5
