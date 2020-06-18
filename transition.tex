@@ -240,8 +240,8 @@ We focus on how each possibility varies in terms of cost, ease of maintenance an
 
 \subhead{On a university/personal server}
     This solution provides complete control.
-    However, there is both a high initial cost in buying the servers and setting them up. Moreover, one needs to maintain the server for its duration: installing security updates, dealing with service interruptions, and managing backups.
-    Besides, the database's scope might be limited by the capabilities of the initial hardware choices.
+    However, there is both a high initial cost in buying the servers and setting them up. Moreover, one needs to maintain the server for the duration of its life: installing security updates, dealing with service interruptions, and managing backups.
+    In addition, the database's scope might be limited by the capabilities of the initial hardware choices.
     The LMFDB uses a couple of servers purchased through grants to provide a development platform for our contributors, and host the back end and the front end for \url{beta.lmfdb.org}
 
 \subhead{Using a hosting service}
@@ -267,7 +267,7 @@ MongoDB, as a document-oriented database, is meant to facilitate the storage of 
 This flexibility is extremely convenient since the data structure can organically evolve as the project develops.
 However, it can also easily lead to errors and unnecessary overhead for a structured database.
 For example, field names were kept short in MongoDB to save space, and multiple typos in the field names were found during the transition to PostgreSQL.
-Furthermore, differing layouts across documents required a more complicated processing code.
+Furthermore, differing layouts across documents required more complicated processing code.
 In contrast, PostgreSQL is a relational database with fixed schemas that enable queries across multiple tables.
 Since the LMFDB was already a uniform set of fields in MongoDB (so much so that an inventory application was written to extract a schema from the data), creating a formal schema was fairly straightforward.
 Database-level schema support improves robustness and performance, and PostgreSQL's JSONB type allows for schemaless columns when desired.
@@ -295,7 +295,7 @@ Having such indexes available is key to providing quick search results for typic
 For example, both MongoDB and PostgreSQL support indexes based on binary trees, which work well for totally ordered data such as integers and strings.
 However, there is another query type that is not well supported by binary trees: given a column representing a set of integers, search for rows that contain a particular set, or are contained in a particular set.
 For example, we store the set of ramified primes $R_K$ for number fields $K$, and we want to be able to search on number fields by specifying such constraints on $R_K$.
-Even though we supported such searches through our web interface, many such searches took over a couple of minutes to perform within MongoDB, which caused our web front end to timeout.
+Even though we supported such searches through our web interface, many such searches took several minutes to perform within MongoDB, which caused our web front end to timeout.
 In PostgreSQL, most of these queries finish in a couple of seconds, both when the number of results is not large enough to justify using an index (the first three rows of Table~\ref{table:ramps}), and when generalized inverted indexes (GIN)~\cite{gin} apply (the last row of Table~\ref{table:ramps}).
 \begin{table}[h!]
   \begin{center}
@@ -390,9 +390,9 @@ We also took advantage of the transition to change some data types that had been
 For example, many large integers had been stored as strings since MongoDB lacked an arbitrary precision data type.
 With the switch to PostgreSQL, we were able to use the numeric type instead, which simplified code used to sort and compute with the results.
 
-Since one of the switch goals was to improve performance, we made some changes to the schemas to help speed up queries.
+Since one of the goals of the switch was to improve performance, we made some changes to the schemas to help speed up queries.
 In particular, we split some of the largest tables in half, putting columns that were used for searching into a search table and columns that were only used for display into an \emph{extras table}.
-This significantly reduced the search table's size, improved index efficiency, and speeded up indexless queries that had to traverse the whole table.
+This significantly reduced the search table's size, improved index efficiency, and sped up indexless queries that had to traverse the whole table.
 Query performance is also affected by sort order, and the default sorting on many tables uses four or five columns.
 We added a primary key column to each table, and for large tables we ordered this primary key by the table's standard order.
 This feature decreased the size of indexes and improved their performance since search results could be ordered by a single numeric column rather than a combination of many columns.
